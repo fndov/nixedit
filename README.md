@@ -18,8 +18,15 @@ This repository contains the `default.nix` and `src`. The package will be instal
 ```
 git clone https://github.com/fndov/nixedit.git
 cd nixedit
-nix-build            # Compile nixedit
-nix-env -i ./result  # Install pacakge
+
+  nixpkgs.config.packageOverrides = pkgs: {
+
+  nixedit = pkgs.callPackage /home/miyu/.clone/nixedit/default.nix { };
+
+  nixedit
+
+# nix-build            # Compile nixedit
+# nix-env -i ./result  # Install pacakge
 ```
 ```
 # Uninstall package using:
