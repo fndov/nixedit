@@ -1,30 +1,35 @@
 SCRIPT_DIR=$(dirname "$0")
 
+format_time() {
+  local total_seconds=$1
+  if (( total_seconds >= 60 )); then
+    local minutes=$((total_seconds / 60))
+    printf "%d min" "$minutes"
+  else
+    printf "%d sec" "$total_seconds"
+  fi
+}
+
+# Updated stopwatch function to only show minutes after 59 seconds
 stopwatch() {
+  local task_description=$1
   local start_time=$(date +%s)
-  local status_message="$1"
   while true; do
     local current_time=$(date +%s)
     local elapsed_time=$((current_time - start_time))
-    if [ "$elapsed_time" -lt 60 ]; then
-      printf "\redit: [ %d sec ] %s" "$elapsed_time" "$status_message"
-    else
-      local minutes=$((elapsed_time / 60))
-      local seconds=$((elapsed_time % 60))
-      printf "\redit:                                                         "
-      printf "\redit: [ %d min ] %s" "$minutes" "$status_message"
-    fi
-    
+    printf "\redit: [ %s ] %s..." "$(format_time "$elapsed_time")" "$task_description"
     sleep 1
   done
 }
 
+# Function to get final elapsed time
 get_elapsed_time() {
   local start_time=$1
   local end_time=$(date +%s)
   echo $((end_time - start_time))
 }
 
+# Updated task_with_timer function
 task_with_timer() {
   local task_description=$1
   local command=$2
@@ -42,11 +47,11 @@ task_with_timer() {
   local final_time=$(get_elapsed_time "$start_time")
 
   if echo "$output" | grep -q "$error_word"; then
-    printf "\redit: [ %d sec ] $error_message\n" "$final_time"
+    printf "\redit: [ %s ] $error_message\n" "$(format_time "$final_time")"
     echo "$output"
     exit 1
   else
-    printf "\redit: [ %d sec ] $success_message   \n" "$final_time"
+    printf "\redit: [ %s ] $success_message   \n" "$(format_time "$final_time")"
   fi
 }
 
@@ -91,12 +96,12 @@ github() {
 }
 
 optimise() {
-  task_with_timer "optimising storage..." "nix-store --optimise" "error" "optimising has failed." "optimising storage complete."
+  task_with_timer "optimising storage" "nix-store --optimise" "error" "optimising has failed." "optimising storage complete."
 }
 
 update() {
-  task_with_timer "updating pacakges database..." "nix-channel --update > /dev/null" "error" "failed to update package database." "updated package database. "
-  task_with_timer "updating search..." "./nsearch.sh --update > /dev/null" "error" "failed to update search" "updated search."
+  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "error" "failed to update package database." "updated package database. "
+  task_with_timer "updating search" "./nsearch.sh --update > /dev/null" "error" "failed to update search" "updated search."
 }
 
 upload() {
@@ -104,12 +109,12 @@ upload() {
   cp -f /etc/nixos/configuration.nix ~/.config/nixedit/Configuration/configuration.nix-$(date +%m-%d-%H:%M)
   git add . > /dev/null 2>&1
   git commit -m "NixOS configuration save." > /dev/null 2>&1
-  task_with_timer "uploading configuration..." "git push -u origin main --force" "error" "upload failed." "upload complete.           "
+  task_with_timer "uploading configuration" "git push -u origin main --force" "error" "upload failed." "upload complete.           "
 }
 
 delete() {
   sudo true
-  task_with_timer "deleting old packages..." "sudo nixos-rebuild switch" "error" "failed to delete packages." "deleted old packages."
+  task_with_timer "deleting old packages" "sudo nixos-rebuild switch" "error" "failed to delete packages." "deleted old packages."
 }
 
 graph() {
@@ -126,7 +131,7 @@ config() {
 
 rebuild() {
   sudo true
-  task_with_timer "rebuilding..." "sudo nixos-rebuild switch" "error" "rebuild failed." "rebuild complete.   "
+  task_with_timer "rebuilding" "sudo nixos-rebuild switch" "error" "rebuild failed." "rebuild complete.   "
 }
 
 list() {
