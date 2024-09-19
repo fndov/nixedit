@@ -21,7 +21,7 @@ update() {
 }
 
 update_system() {
-  task_with_timer "updating pacakges database" "nix-channel --update" "file" "failed to update package database." "updating database complete. "
+  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "error" "failed to update package database." "updating database complete. "
 }
 
 update_search() {
@@ -73,7 +73,7 @@ upload() {
   git add . > /dev/null 2>&1
 
   git commit -m "NixOS configuration save." > /dev/null 2>&1
-  task_with_timer "uploading configuration" "git push -u origin main --force" "error" "upload failed." "upload complete.           "
+  task_with_timer "uploading configuration" "git push -u origin main --force" "file" "upload failed." "upload complete.           "
 }
 
 github() {
