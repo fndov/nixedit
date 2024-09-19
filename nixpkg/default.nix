@@ -1,0 +1,25 @@
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.stdenv.mkDerivation {
+  pname = "nixedit";
+  version = "1.0";
+
+  src = ./src;
+
+  buildInputs = [ pkgs.bash pkgs.nix-tree pkgs.fzf ];
+
+  installPhase = ''
+    mkdir -p $out/bin
+    mkdir -p $out/lib/nixedit  # Create the directory for nsearch.sh
+    cp nixedit.sh $out/bin/nixedit
+    cp nsearch.sh $out/lib/nixedit/nsearch
+    chmod +x $out/bin/nixedit
+    chmod +x $out/lib/nixedit/nsearch
+  '';
+
+  meta = with pkgs.lib; {
+    description = "NixOS Rebuilding CLI utility.";
+    license = licenses.mit;
+    maintainers = [ maintainers.yourname ];
+  };
+}
