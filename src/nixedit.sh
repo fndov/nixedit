@@ -73,19 +73,24 @@ github() {
   mkdir ~/.config/nixedit/Configuration/ > /dev/null 2>&1 
   mkdir ~/.config/nixedit/Flake/ > /dev/null 2>&1 
   mkdir ~/.config/nixedit/Home/ > /dev/null 2>&1 
+
   rm -rf ~/.config/nixedit/.git > /dev/null 2>&1 
   cd ~/.config/nixedit > /dev/null 2>&1 
   cp -f /etc/nixos/configuration.nix ~/.config/nixedit/Configuration/configuration.nix-$(date +%m-%d-%H:%M)
+  
   git init > /dev/null 2>&1
   git config --global user.name "nixedit" > /dev/null 2>&1
   git config --global user.email "miyu@allthingslinux.com" > /dev/null 2>&1
   git add . > /dev/null 2>&1
   git commit -m "NixOS Backup" > /dev/null 2>&1
+  
   echo nixedit: Open https://github.com/new and create a new repository.
   read -p "URL: " repo
+  
   git remote add origin "$repo" > /dev/null 2>&1
   git checkout -b main > /dev/null 2>&1
   git checkout main origin/main > /dev/null 2>&1
+  
   output=$(git push -u origin main --force 2>&1)
   if echo "$output" | grep -q "branch 'main' set up to track 'origin/main'"; then
     echo "nixedit: Configuration synced."

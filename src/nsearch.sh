@@ -2,18 +2,6 @@
 CACHE_DIR="${NSEARCH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nsearch}"
 FZF_CMD="${NSEARCH_FZF_CMD:-fzf --multi --preview-window=top,3,wrap}"
 
-help() {
-  echo "Usage: $0 [options]"
-  echo "Options:"
-  echo "  -h, --help      Show this help message and exit"
-  echo "  -u, --update    Updates the local Database"
-  echo "  -c, --check     Performs Basic Checks"
-
-  echo "Variables:"
-  echo "  NSEARCH_CACHE_DIR  Cache directory for nsearch"
-  echo "  NSEARCH_FZF_CMD    FZF command to use"
-}
-
 program_check() {
   if ! command -v "$1" >/dev/null; then
     echo "[err]  ..... $1 is not installed"
