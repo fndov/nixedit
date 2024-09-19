@@ -4,9 +4,10 @@ default_operation() {
   if ! sudo true; then
     exit 1
   fi
-  update_search
+  update_search # first run
   "$HOME/.nix-profile/lib/nixedit/nsearch" "$@" > /dev/null
   config
+# list
   update_system
   update_search
   rebuild
@@ -203,8 +204,8 @@ help() {
     A tool for managing your NixOS Configuration & System. Automate NixOS at every step.
     
     Startup commands:
-      --github        Connect your github repository and backup NixOS configuration.
-      --update        Update the NixPkgs & search, databases.
+      --github        Connect your dedicated github repository to store backups.
+      --update        Update the nixpkgs & search, databases.
 
     Singular options:
       --help          Show this help message and exit.
@@ -215,18 +216,19 @@ help() {
       --list          List pervious generations
       --upload        Upload configuration.
       --rebuild       Rebuild system.
-      --optimise      Optimize Nix storage for performance.
       --delete        Delete older packages.
+      --optimise      Optimize Nix storage.
       --graph         Browse dependency graph
       --find          Find local packages
           
-    If no option is provided, the default operation will:
-      - Perform a search
-      - Open the configuration file for editing
-      - List system generations
-      - Rebuild the system
-      - Upload configuration to repository
-      - Delete old packages"
+  If no option is provided, the default operation will:
+    - Perform a search
+    - Open the configuration file for editing
+    - Update system packages
+    - Rebuild the system
+    - Upload configuration to repository
+    - Delete old packages
+    - Optimise package storage"
 }
 
 # Check which argument was passed
