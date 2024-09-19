@@ -18,7 +18,7 @@ pkgs.stdenv.mkDerivation {
   '';
 
   meta = with pkgs.lib; {
-    description = "NixOS Rebuilding CLI utility.";
+    description = "A NixOS Rebuilding CLI Utility";
     license = licenses.mit;
     maintainers = [ maintainers.yourname ];
   };
