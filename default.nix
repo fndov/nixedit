@@ -6,7 +6,7 @@ pkgs.stdenv.mkDerivation {
 
   src = ./src;
 
-  nativeBuildInputs = [
+  BuildInputs = [
     pkgs.bash
     pkgs.nix-tree
     pkgs.fzf
