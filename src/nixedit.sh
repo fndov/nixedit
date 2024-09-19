@@ -1,74 +1,81 @@
 SCRIPT_DIR=$(dirname "$0")
 
-format_time() {
-  local total_seconds=$1
-  if (( total_seconds >= 60 )); then
-    local minutes=$((total_seconds / 60))
-    printf "%d min" "$minutes"
-  else
-    printf "%d sec" "$total_seconds"
-  fi
-}
-
-# Updated stopwatch function to only show minutes after 59 seconds
-stopwatch() {
-  local task_description=$1
-  local start_time=$(date +%s)
-  while true; do
-    local current_time=$(date +%s)
-    local elapsed_time=$((current_time - start_time))
-    printf "\redit: [ %s ] %s..." "$(format_time "$elapsed_time")" "$task_description"
-    sleep 1
-  done
-}
-
-# Function to get final elapsed time
-get_elapsed_time() {
-  local start_time=$1
-  local end_time=$(date +%s)
-  echo $((end_time - start_time))
-}
-
-# Updated task_with_timer function
-task_with_timer() {
-  local task_description=$1
-  local command=$2
-  local error_word=$3
-  local error_message=$4
-  local success_message=$5
-
-  local start_time=$(date +%s)
-  echo -ne "edit: [ 0 sec ] $task_description\r"
-  stopwatch "$task_description" &
-  local stopwatch_pid=$!
-  local output=$($command 2>&1)
-  kill "$stopwatch_pid"
-  wait "$stopwatch_pid" 2>/dev/null
-  local final_time=$(get_elapsed_time "$start_time")
-
-  if echo "$output" | grep -q "$error_word"; then
-    printf "\redit: [ %s ] $error_message\n" "$(format_time "$final_time")"
-    echo "$output"
-    exit 1
-  else
-    printf "\redit: [ %s ] $success_message   \n" "$(format_time "$final_time")"
-  fi
-}
-
 default_operation() {
   if ! sudo true; then
     exit 1
   fi
+  update_search
   "$HOME/.nix-profile/lib/nixedit/nsearch" "$@" > /dev/null
   config
-  update
+  update_system
+  update_search
   rebuild
-  list
   upload
   delete
+  optimise
 }
 
-# github setup
+update() {
+  update_system
+  update_search
+}
+
+update_system() {
+  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "fatal" "failed to update package database." "updating database complete. "
+}
+
+update_search() {
+  "$HOME/.nix-profile/lib/nixedit/nsearch" --check > /dev/null 2>&1 &
+  pid=$!
+  start=$(date +%s)
+  if ! (sleep 0.00000000001; ps -p $pid > /dev/null); then
+    # If the command finishes within 0.25 seconds, skip the output
+    wait $pid
+    return
+  fi
+  while ps -p $pid > /dev/null; do
+    elapsed=$(( $(date +%s) - start ))
+    sec=$(( elapsed % 60 ))
+    min=$(( elapsed / 60 ))
+    if [ $min -eq 0 ]; then
+      printf "\redit: [%2d sec ] updating search..." $sec
+    else
+      printf "\redit: [ %d min ] updating search..." $min
+    fi
+    sleep 1
+  done
+  elapsed=$(( $(date +%s) - start ))
+  sec=$(( elapsed % 60 ))
+  min=$(( elapsed / 60 ))
+  if [ $min -eq 0 ]; then
+    printf "\redit: [%2d sec ] updating search complete\n" $sec
+  else
+    printf "\redit: [ %d min ] updating search complete\n" $min
+  fi
+}
+
+search() {
+  "$HOME/.nix-profile/lib/nixedit/nsearch"
+}
+
+config() {
+  sudo micro /etc/nixos/configuration.nix
+}
+
+rebuild() {
+  sudo true
+  task_with_timer "rebuilding" "sudo nixos-rebuild switch" "error" "rebuild failed." "rebuild complete.   "
+}
+
+upload() {
+  cd ~/.config/nixedit/
+  cp -f /etc/nixos/configuration.nix ~/.config/nixedit/Configuration/configuration.nix-$(date +%m-%d-%H:%M)
+  git add . > /dev/null 2>&1
+
+  git commit -m "NixOS configuration save." > /dev/null 2>&1
+  task_with_timer "uploading configuration" "git push -u origin main --force" "error" "upload failed." "upload complete.           "
+}
+
 github() {
   mkdir ~/.config/nixedit/ > /dev/null 2>&1 
   mkdir ~/.config/nixedit/Configuration/ > /dev/null 2>&1 
@@ -101,43 +108,69 @@ github() {
   fi
 }
 
+delete() {
+  sudo true
+  task_with_timer "deleting old packages" "sudo nix-collect-garbage --delete-older-than 1d" "error" "failed to delete packages." "deleting packages complete"
+}
+
 optimise() {
   task_with_timer "optimising storage" "nix-store --optimise" "error" "optimising has failed." "optimising storage complete."
 }
 
-update() {
-  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "error" "failed to update package database." "updated package database. "
-  task_with_timer "updating search" "./nsearch.sh --update > /dev/null" "error" "failed to update search" "updated search."
+task_with_timer() {
+  local task_description=$1
+  local command=$2
+  local error_word=$3
+  local error_message=$4
+  local success_message=$5
+
+  local start_time=$(date +%s)
+  echo -ne "edit: [ 0 sec ] $task_description\r"
+  stopwatch "$task_description" &
+  local stopwatch_pid=$!
+  local output=$($command 2>&1)
+  kill "$stopwatch_pid"
+  wait "$stopwatch_pid" 2>/dev/null
+  local final_time=$(get_elapsed_time "$start_time")
+
+  if echo "$output" | grep -q "$error_word"; then
+    printf "\redit: [ %s ] $error_message\n" "$(format_time "$final_time")"
+    echo "$output"
+    exit 1
+  else
+    printf "\redit: [ %s ] $success_message   \n" "$(format_time "$final_time")"
+  fi
 }
 
-upload() {
-  cd ~/.config/nixedit/
-  cp -f /etc/nixos/configuration.nix ~/.config/nixedit/Configuration/configuration.nix-$(date +%m-%d-%H:%M)
-  git add . > /dev/null 2>&1
-  git commit -m "NixOS configuration save." > /dev/null 2>&1
-  task_with_timer "uploading configuration" "git push -u origin main --force" "error" "upload failed." "upload complete.           "
+format_time() {
+  local total_seconds=$1
+  if (( total_seconds >= 60 )); then
+    local minutes=$((total_seconds / 60))
+    printf "%d min" "$minutes"
+  else
+    printf "%d sec" "$total_seconds"
+  fi
 }
 
-delete() {
-  sudo true
-  task_with_timer "deleting old packages" "sudo nixos-rebuild switch" "error" "failed to delete packages." "deleted old packages."
+stopwatch() {
+  local task_description=$1
+  local start_time=$(date +%s)
+  while true; do
+    local current_time=$(date +%s)
+    local elapsed_time=$((current_time - start_time))
+    printf "\redit: [ %s ] %s..." "$(format_time "$elapsed_time")" "$task_description"
+    sleep 1
+  done
+}
+
+get_elapsed_time() {
+  local start_time=$1
+  local end_time=$(date +%s)
+  echo $((end_time - start_time))
 }
 
 graph() {
   nix-tree
-}
-
-search() {
-  "$HOME/.nix-profile/lib/nixedit/nsearch"
-}
-
-config() {
-  sudo micro /etc/nixos/configuration.nix
-}
-
-rebuild() {
-  sudo true
-  task_with_timer "rebuilding" "sudo nixos-rebuild switch" "error" "rebuild failed." "rebuild complete.   "
 }
 
 list() {
@@ -146,7 +179,7 @@ list() {
 
 find() {
   if [ -z "$2" ]; then
-    echo "Usage: nixedit --find <search-term>"
+    echo "Usage: nixedit --find <package-name>"
     exit 1
   fi
 
@@ -230,6 +263,9 @@ case "$1" in
     ;;
   --find)
     find "$@"
+    ;;
+  --check)
+    check
     ;;
   *)
     default_operation
