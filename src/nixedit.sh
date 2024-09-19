@@ -61,6 +61,7 @@ default_operation() {
   fi
   "$HOME/.nix-profile/lib/nixedit/nsearch" "$@" > /dev/null
   config
+  update
   rebuild
   list
   upload
