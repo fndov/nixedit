@@ -71,16 +71,15 @@ upload() {
   DIR="$HOME/.config/nixedit/"
   # Check if the directory exists
   if [ -d "$DIR" ]; then
-    true
-  else
-    echo "DEBUG."
-  fi
   cd ~/.config/nixedit/
   cp -f /etc/nixos/configuration.nix ~/.config/nixedit/Configuration/configuration.nix-$(date +%m-%d-%H:%M)
   git add . > /dev/null 2>&1
 
   git commit -m "NixOS configuration save." > /dev/null 2>&1
   task_with_timer "uploading configuration" "git push -u origin main --force" "file" "upload failed." "upload complete.           "
+  else
+    echo "nixedit: upload failed, use --github to get started."
+  fi
 }
 
 github() {
