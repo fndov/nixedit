@@ -3,7 +3,7 @@
 `nixedit` is a simple command-line tool to automate all steps of rebuilding.
 
 ### Features:
-- Search Configure Build Backup Delete packages in one step.
+- Search Configure Build Backup Update Delete in one step.
 - Search packages available online with `--search`.
 - Integrates with GitHub to upload backups of your configuration.
 
