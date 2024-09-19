@@ -7,12 +7,12 @@ pkgs.stdenv.mkDerivation {
   src = ./src;
 
   buildInputs = [
-    bash
-    nix-tree
-    fzf
-    jq
-    micro
-    git
+    pkgs.bash
+    pkgs.nix-tree
+    pkgs.fzf
+    pkgs.jq
+    pkgs.micro
+    pkgs.git
     ];
 
   installPhase = ''
