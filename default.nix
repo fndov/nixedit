@@ -6,22 +6,13 @@ pkgs.stdenv.mkDerivation {
 
   src = ./src;
 
-  BuildInputs = [
-    pkgs.bash
-    pkgs.nix-tree
-    pkgs.fzf
-    pkgs.jq
-    pkgs.micro
-    pkgs.git
-    ];
-
   nativeBuildInputs = [
-    pkgs.bash
-    pkgs.nix-tree
-    pkgs.fzf
-    pkgs.jq
-    pkgs.micro
-    pkgs.git
+    bash
+    nix-tree
+    fzf
+    jq
+    micro
+    git
     ];
 
   installPhase = ''
