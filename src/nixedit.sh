@@ -21,7 +21,7 @@ update() {
 }
 
 update_system() {
-  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "directory" "failed to update package database." "updating database complete. "
+  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "file" "failed to update package database." "updating database complete. "
 }
 
 update_search() {
