@@ -6,15 +6,6 @@ pkgs.stdenv.mkDerivation {
 
   src = ./src;
 
-  buildInputs = with pkgs; [
-    bash
-    nix-tree
-    fzf
-    jq
-    micro
-    git
-    sudo
-  ];
   nativeBuildInputs = with pkgs; [
     makeWrapper
   ];
