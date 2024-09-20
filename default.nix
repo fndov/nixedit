@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> { } }:
 
 pkgs.stdenv.mkDerivation {
   pname = "nixedit";
@@ -6,13 +6,13 @@ pkgs.stdenv.mkDerivation {
 
   src = ./src;
 
-  buildInputs = [
-    pkgs.bash
-    pkgs.nix-tree
-    pkgs.fzf
-    pkgs.jq
-    pkgs.micro
-    pkgs.git
+  buildInputs = with pkgs; [
+    bash
+    nix-tree
+    fzf
+    jq
+    micro
+    git
     ];
 
   installPhase = ''
