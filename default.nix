@@ -13,7 +13,11 @@ pkgs.stdenv.mkDerivation {
     jq
     micro
     git
-    ];
+    sudo
+  ];
+  nativeBuildInputs = with pkgs; [
+    makeWrapper
+  ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -22,6 +26,17 @@ pkgs.stdenv.mkDerivation {
     cp nsearch.sh $out/lib/nixedit/nsearch
     chmod +x $out/bin/nixedit
     chmod +x $out/lib/nixedit/nsearch
+  '';
+
+  postFixup = ''
+    wrapProgram $out/bin/nixedit --set PATH ${pkgs.lib.makeBinPath (with pkgs; [
+      git
+      micro
+      jq
+      fzf
+      sudo
+      coreutils
+    ])}
   '';
 
   meta = with pkgs.lib; {
