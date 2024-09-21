@@ -132,7 +132,7 @@ update() {
 }
 
 update_system() {
-  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "error" "failed to update package database." "update database complete."
+  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "error" "failed to update package database" "update database complete"
 }
 
 update_search() {
@@ -151,10 +151,9 @@ update_search() {
     min=$(( elapsed / 60 ))
 
     if [ $min -eq 0 ]; then
-      printf "\redit: [ %d sec ] updating search..." $sec
+      printf "\redit: [ %d sec ] updating search...\033[0K" $sec
     else
-      printf "\redit: [ %d min ] updating search... " $min
-      printf "\redit: [ %d min ] updating search..." $min
+      printf "\redit: [ %d min ] updating search...\033[0K" $min
     fi
     
     sleep 1
@@ -165,13 +164,11 @@ update_search() {
   min=$(( elapsed / 60 ))
 
   if [ $min -eq 0 ]; then
-    printf "\redit: [ %d sec ] update search complete.\n" $sec
+    printf "\redit: [ %d sec ] update search complete.\033[0K\n" $sec
   else
-    printf "\redit: [ %d min ] update search complete.\n" $min
+    printf "\redit: [ %d min ] update search complete.\033[0K\n" $min
   fi
 }
-
-
 
 search() {
   nsearch "$@"
@@ -187,7 +184,7 @@ config() {
 
 rebuild() {
   sudo true
-  task_with_timer "rebuilding" "sudo nixos-rebuild switch" "error" "rebuild failed." "rebuild complete."
+  task_with_timer "rebuilding" "sudo nixos-rebuild switch" "error" "rebuild failed" "rebuild complete"
 }
 
 upload() {
@@ -207,7 +204,7 @@ upload() {
   git add . > /dev/null 2>&1
 
   git commit -m "Automatic backup" > /dev/null 2>&1
-  task_with_timer "uploading configuration" "git push -u origin main --force" "file" "upload failed, use --github to get started." "upload complete."
+  task_with_timer "uploading configuration" "git push -u origin main --force" "file" "upload failed, use --github to get started" "upload complete"
   fi
 }
 
@@ -236,20 +233,20 @@ github() {
   
   output=$(git push -u origin main --force 2>&1)
   if echo "$output" | grep -q "branch 'main' set up to track 'origin/main'"; then
-    echo "nixedit: Configuration synced."
+    echo "edit: Configuration synced."
   else
-    echo "nixedit: Sync failed! Check URL or token settings."
+    echo "edit: Sync failed! Check URL or token settings."
     exit 1
   fi
 }
 
 delete() {
   sudo true
-  task_with_timer "deleting old packages" "sudo nix-collect-garbage --delete-older-than 1d" "error" "failed to delete packages." "deletion complete."
+  task_with_timer "deleting old packages" "sudo nix-collect-garbage --delete-older-than 1d" "error" "failed to delete packages" "deletion complete"
 }
 
 optimise() {
-  task_with_timer "optimising storage" "nix-store --optimise" "error" "optimising has failed." "optimisation complete."
+  task_with_timer "optimising storage" "nix-store --optimise" "error" "optimising has failed" "optimisation complete"
 }
 
 task_with_timer() {
@@ -260,7 +257,7 @@ task_with_timer() {
   local success_message=$5
 
   local start_time=$(date +%s)
-  echo -ne "edit: [ 0 sec ] $task_description\r"
+  echo -ne "edit: [ 0 sec ] $task_description\033[0K\r"
   stopwatch "$task_description" &
   local stopwatch_pid=$!
   local output=$($command 2>&1)
@@ -269,11 +266,11 @@ task_with_timer() {
   local final_time=$(get_elapsed_time "$start_time")
 
   if echo "$output" | grep -q "$error_word"; then
-    printf "\redit: [ %s ] $error_message\n" "$(format_time "$final_time")"
+    printf "\redit: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
     echo "$output"
     exit 1
   else
-    printf "\redit: [ %s ] $success_message       \n" "$(format_time "$final_time")"
+    printf "\redit: [ %s ] $success_message.\033[0K\n" "$(format_time "$final_time")"
   fi
 }
 
@@ -293,7 +290,7 @@ stopwatch() {
   while true; do
     local current_time=$(date +%s)
     local elapsed_time=$((current_time - start_time))
-    printf "\redit: [ %s ] %s..." "$(format_time "$elapsed_time")" "$task_description"
+    printf "\redit: [ %s ] %s...\033[0K" "$(format_time "$elapsed_time")" "$task_description"
     sleep 1
   done
 }
@@ -323,7 +320,7 @@ find() {
 }
 
 version() {
-  echo nixedit 1.0
+  echo nixedit 0.5
 }
 
 help() {
