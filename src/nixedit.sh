@@ -82,7 +82,6 @@ EOF
       xargs
   }
 
-  # Argument handler
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
     -h | --help)
@@ -104,8 +103,7 @@ EOF
       ;;
     esac
   done
-
-  # Default behavior if no arguments are provided
+  
   checks
   isearch
 }
@@ -334,20 +332,17 @@ add() {
       echo "Usage: --add <package-name>"
       return 1
   fi
-  
-  # Check if the file exists
+
     if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "error: file not found: $CONFIG_FILE"
         return 1
     fi
-  
-  # Check if the package is already in the list
+
     if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
         echo "error: '$PACKAGE' is already present in the system package list."
         return 0
     fi
   
-  # Insert the package at the start of the systemPackages block, using sudo
     sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/  $PACKAGE\n]/" "$CONFIG_FILE"
 
     echo "edit: '$PACKAGE' added to the system package list."
