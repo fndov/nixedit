@@ -327,7 +327,7 @@ find() {
 }
 
 version() {
-  echo nixedit 0.5
+  echo nixedit 0.8
 }
 
 help() {
