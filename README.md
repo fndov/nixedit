@@ -3,7 +3,7 @@ A tool for managing your NixOS Configuration & System. Automate NixOS at every s
 
 ### Features:
 - Search Configure Build Backup Update Delete Optimise in one step.
-- Integrates with GitHub to upload backups of your configuration.
+- Integrates with Github to upload backups of your configuration.
 - Third Party Code: [Package search](https://github.com/niksingh710/nsearch?tab=readme-ov-file) (can't be moved to default.nix)
 
 ### Installation Instructions
@@ -43,3 +43,6 @@ nixedit
 Step 3. Install the package.
 ```
 sudo nixos-rebuild switch
+```
+---
+Github: [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)

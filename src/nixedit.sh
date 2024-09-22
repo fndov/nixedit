@@ -225,7 +225,7 @@ github() {
   git add . > /dev/null 2>&1
   git commit -m "NixOS Backup" > /dev/null 2>&1
   
-  echo nixedit: Open https://github.com/new and create a new repository.
+  echo "Open https://github.com/new and create a new repository."
   read -p "URL: " repo
   
   git remote add origin "$repo" > /dev/null 2>&1
@@ -234,9 +234,9 @@ github() {
   
   output=$(git push -u origin main --force 2>&1)
   if echo "$output" | grep -q "branch 'main' set up to track 'origin/main'"; then
-    echo "edit: Configuration synced."
+    echo "Configuration synced."
   else
-    echo "edit: Sync failed! Check URL or token settings."
+    echo "Sync failed, check URL or token settings."
     exit 1
   fi
 }
