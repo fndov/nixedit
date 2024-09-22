@@ -25,7 +25,7 @@ nsearch() {
       echo "edit: cache directory created."
     fi
     if [ ! -f "$CACHE_DIR/db.json" ]; then
-      echo "edit: database not available."
+      echo "error: database not available."
       if ! update; then
         echo "error: failed to update database, check network."
         exit 1
@@ -171,6 +171,7 @@ update_search() {
 }
 
 search() {
+  update_search 
   nsearch "$@"
 }
 
@@ -243,6 +244,12 @@ github() {
 delete() {
   sudo true
   task_with_timer "deleting old packages" "sudo nix-collect-garbage --delete-older-than 1d" "error" "failed to delete packages" "deletion complete"
+}
+
+debug() {
+  rm -rf ~/.cache/nixedit > /dev/null 2>&1
+  rm -rf ~/.nixedit/Home/ ~/.nixedit/Configuration/ ~/.nixedit/Flake/
+  echo "debug: nixedit reset complete."
 }
 
 optimise() {
@@ -332,17 +339,18 @@ Setup commands:
   --github        Connect your dedicated github repository to store backups.
   
 Singular options:
-  --help          Show this help message and exit.
-  --version       Display current nixedit version.
+  --help          Show this help message and exit
+  --version       Display current nixedit version
+  --check         Check search functionality
 
-  --search        Search packages.
-  --config        Open configuration.
+  --search        Search packages
+  --config        Open configuration
   --list          List pervious generations
-  --upload        Upload configuration.
-  --update        Update the nixpkgs & search, databases.
-  --rebuild       Rebuild system.
-  --delete        Delete older packages.
-  --optimise      Optimize Nix storage.
+  --upload        Upload configuration
+  --update        Update the nixpkgs & search, databases
+  --rebuild       Rebuild system
+  --delete        Delete older packages
+  --optimise      Optimize Nix storage
   --graph         Browse dependency graph
   --find          Find local packages
         
@@ -405,6 +413,9 @@ case "$1" in
     ;;
   --check)
     check
+    ;;
+  --debug)
+    debug
     ;;
   *)
     echo "Unknown option: '$1'"
