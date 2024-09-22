@@ -114,7 +114,7 @@ default_operation() {
   if ! sudo true; then
     exit 1
   fi
-  update_search # 
+  update_search
   search "$@" > /dev/null
   config
 # list
@@ -326,6 +326,34 @@ find() {
   cd /nix/store && ls | grep "$search_term"
 }
 
+add() {
+  local CONFIG_FILE="/etc/nixos/configuration.nix"
+  local PACKAGE="$2"
+  
+  if [[ -z "$PACKAGE" ]]; then
+      echo "Usage: --add <package-name>"
+      return 1
+  fi
+  
+  # Check if the file exists
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "error: file not found: $CONFIG_FILE"
+        return 1
+    fi
+  
+  # Check if the package is already in the list
+    if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+        echo "error: '$PACKAGE' is already present in the system package list."
+        return 0
+    fi
+  
+  # Insert the package at the start of the systemPackages block, using sudo
+    sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/  $PACKAGE\n]/" "$CONFIG_FILE"
+
+    echo "edit: '$PACKAGE' added to the system package list."
+    rebuild
+}
+
 version() {
   echo nixedit 0.8
 }
@@ -345,6 +373,7 @@ Singular options:
   --search        Search packages
   --config        Open configuration
   --list          List pervious generations
+  --add           Add package to configuration
   --upload        Upload configuration
   --update        Update the nixpkgs & search, databases
   --rebuild       Rebuild system
@@ -413,6 +442,9 @@ case "$1" in
     ;;
   --find)
     find "$@"
+    ;;
+  --add)
+    add "$@"
     ;;
   --check)
     check
