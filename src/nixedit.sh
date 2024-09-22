@@ -333,7 +333,7 @@ version() {
 help() {
   echo "Usage: nixedit [--OPTION]
 
-A tool for managing your NixOS Configuration & System. Automate NixOS at every step.
+NixOS build automating utility, for your Configuration & System. Streamlined process.
 
 Setup commands:
   --github        Connect your dedicated github repository to store backups.
