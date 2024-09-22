@@ -6,7 +6,7 @@ nsearch() {
 
   program_check() {
     if ! command -v "$1" >/dev/null; then
-      echo "[err]  ..... $1 is not installed"
+      echo "error: $1 is not installed."
       exit 1
     fi
   }
@@ -20,20 +20,20 @@ nsearch() {
   checks() {
     all_checks
     if [ ! -d "$CACHE_DIR" ]; then
-      echo "[err]  ..... Cache directory does not exist"
+      echo "error: cache directory does not exist."
       mkdir -p "$CACHE_DIR"
-      echo "[info] .... Cache directory created"
+      echo "edit: cache directory created."
     fi
     if [ ! -f "$CACHE_DIR/db.json" ]; then
-      echo "[err]  ..... db is not available"
+      echo "edit: database not available."
       if ! update; then
-        echo "[err]  ..... Failed to update db | Check Network!"
+        echo "error: failed to update database, check network."
         exit 1
       fi
     fi
 
     if [ $# -eq 1 ]; then
-      echo "[info] .... All checks passed"
+      echo "edit: all checks passed."
     fi
   }
 
@@ -41,7 +41,7 @@ nsearch() {
     pid=$!
     i=1
     sp="\|/-"
-    printf "%s ..." "$1"
+    printf "%s" "$1"
     while ps -p $pid >/dev/null; do
       printf "\b%c" "${sp:i++%4:1}"
       sleep 0.1
@@ -52,8 +52,8 @@ nsearch() {
   update() {
     mkdir -p "$CACHE_DIR"
     nix search nixpkgs --json "" 2>/dev/null 1>"$CACHE_DIR/db.json" &
-    loading "[info] Updating the local Database"
-    echo "[info] .... Database updated"
+    loading "edit: updating the local Database."
+    echo "edit: database updated."
   }
 
   preview_data() {
@@ -266,7 +266,7 @@ task_with_timer() {
   local final_time=$(get_elapsed_time "$start_time")
 
   if echo "$output" | grep -q "$error_word"; then
-    printf "\redit: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
+    printf "\rerror: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
     echo "$output"
     exit 1
   else
