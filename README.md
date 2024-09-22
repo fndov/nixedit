@@ -1,5 +1,5 @@
 ## Nixedit
-A tool for managing your NixOS Configuration & System. Automate NixOS at every step.
+NixOS build automating utility, for your Configuration & System. Streamlined process. 
 ### Features:
 - Search Configure Build Backup Update Delete Optimise in one step.
 - Integrates with Github to upload backups of your configuration.
