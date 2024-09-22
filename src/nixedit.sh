@@ -341,8 +341,7 @@ Setup commands:
 Singular options:
   --help          Show this help message and exit
   --version       Display current nixedit version
-  --check         Check search functionality
-
+  
   --search        Search packages
   --config        Open configuration
   --list          List pervious generations
@@ -362,6 +361,10 @@ If no option is provided, the default operation will:
   - Upload configuration to repository
   - Delete old packages
   - Optimise package storage"
+
+#  Development options:
+#  --debug         Reset all nixedit data
+#  --check         Check search functionality
 }
 
 # Check if any arguments were provided
