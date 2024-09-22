@@ -1,6 +1,5 @@
 ## Nixedit
 A tool for managing your NixOS Configuration & System. Automate NixOS at every step.
-
 ### Features:
 - Search Configure Build Backup Update Delete Optimise in one step.
 - Integrates with Github to upload backups of your configuration.
@@ -45,4 +44,6 @@ Step 3. Install the package.
 sudo nixos-rebuild switch
 ```
 ---
-Github: [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). Use ``--debug`` for any problems, or submit an issue.
+Github: [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). Use ``--debug`` for any problems, or submit an issue. <br>
+<br>
+<sup>*experiments unsupported.*<sup>
