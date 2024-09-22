@@ -45,4 +45,4 @@ Step 3. Install the package.
 sudo nixos-rebuild switch
 ```
 ---
-Github: [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). Use ``--reset`` for any problems, or submit an issue.
+Github: [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). Use ``--debug`` for any problems, or submit an issue.
