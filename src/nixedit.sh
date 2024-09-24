@@ -82,7 +82,6 @@ EOF
       xargs
   }
 
-  # Argument handler
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
     -h | --help)
@@ -105,7 +104,6 @@ EOF
     esac
   done
 
-  # Default behavior if no arguments are provided
   checks
   isearch
 }
@@ -190,7 +188,6 @@ rebuild() {
 
 upload() {
   DIR="$HOME/.nixedit/"
-  # Check if the directory exists
   if [ -d "$DIR" ]; then
   cd ~/.nixedit/
 
@@ -328,60 +325,146 @@ find() {
 
 add() {
   local CONFIG_FILE="/etc/nixos/configuration.nix"
-  local PACKAGE="$2"
   
-  if [[ -z "$PACKAGE" ]]; then
-      echo "Usage: --add <package-name>"
+  if [[ "$#" -lt 2 ]]; then
+      echo "Usage: --add <package-name> <package-name> ..."
       return 1
   fi
   
-  # Check if the file exists
+  for PACKAGE in "${@:2}"; do
+    
     if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "error: file not found: $CONFIG_FILE"
         return 1
     fi
-  
-  # Check if the package is already in the list
+
     if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
-        echo "error: '$PACKAGE' is already present in the system package list."
-        return 0
+        echo "error: '$PACKAGE' is already present in system package list."
+        continue
     fi
-  
-  # Insert the package at the start of the systemPackages block, using sudo
+
     sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/  $PACKAGE\n]/" "$CONFIG_FILE"
 
-    echo "edit: '$PACKAGE' added to the system package list."
+    echo "edit: '$PACKAGE' added to system package list."
+
+  done
 }
 
 remove() {
   local CONFIG_FILE="/etc/nixos/configuration.nix"
-  local PACKAGE="$2"
   
-  if [[ -z "$PACKAGE" ]]; then
-      echo "Usage: --remove <package-name>"
+  if [[ "$#" -lt 2 ]]; then
+      echo "Usage: --remove <package-name> <package-name> ..."
       return 1
   fi
   
+  for PACKAGE in "${@:2}"; do
+    
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "error: file not found: $CONFIG_FILE"
+        return 1
+    fi
+
+    if ! grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+        echo "error: '$PACKAGE' is not present in system package list."
+        continue
+    fi
+
+    sudo sed -i "/environment\.systemPackages/,/\]/ s/\b$PACKAGE\b//g" "$CONFIG_FILE"
+    sudo sed -i "/environment\.systemPackages/,/\]/ s/\s\+/ /g" "$CONFIG_FILE" 
+    sudo sed -i "/environment\.systemPackages/,/\]/ s/ \]$/]/" "$CONFIG_FILE"
+
+    echo "edit: '$PACKAGE' removed from system package list."
+
+  done
+}
+
+install() {
+  local CONFIG_FILE="/etc/nixos/configuration.nix"
+  local new_packages=()
+
+  if [[ "$#" -ne 2 ]]; then
+      echo "Usage: --install <package-name>"
+      return 1
+  fi
+
+  PACKAGE="$2"
+
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+      echo "error: file not found: $CONFIG_FILE"
+      return 1
+  fi
+
+  if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+      echo "error: '$PACKAGE' is already in system package list."
+      return 0  # No need to continue if package already exists
+  fi
+
+  new_packages+=("$PACKAGE")
+
+  sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/  $PACKAGE\n]/" "$CONFIG_FILE"
+
+  if [[ ${#new_packages[@]} -gt 0 ]]; then
+    local task_description="installing ${new_packages[*]}"
+    local command="sudo nixos-rebuild switch"
+    local error_word="error"
+    local error_message="installation failed, '$PACKAGE' may not exist"
+    local success_message="installed ${new_packages[*]}"
+
+    local start_time=$(date +%s)
+    echo -ne "edit: [ 0 sec ] $task_description\033[0K\r"
+    stopwatch "$task_description" &
+    local stopwatch_pid=$!
+    local output=$($command 2>&1)
+    kill "$stopwatch_pid"
+    wait "$stopwatch_pid" 2>/dev/null
+    local final_time=$(get_elapsed_time "$start_time")
+
+    if echo "$output" | grep -q "$error_word"; then
+      printf "\rerror: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
+      remove --remove $PACKAGE > /dev/null
+      exit 1
+    else
+      printf "\redit: [ %s ] $success_message.\033[0K\n" "$(format_time "$final_time")"
+    fi
+  else
+    true
+  fi
+}
+
+uninstall() {
+  local CONFIG_FILE="/etc/nixos/configuration.nix"
+  
+  if [[ "$#" -ne 2 ]]; then
+      echo "Usage: --uninstall <package-name>"
+      return 1
+  fi
+  
+  local PACKAGE="$2"
+
   if [[ ! -f "$CONFIG_FILE" ]]; then
       echo "error: file not found: $CONFIG_FILE"
       return 1
   fi
 
   if ! grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
-      echo "error: '$PACKAGE' is not present in the system package list."
+      echo "error: '$PACKAGE' is not present in system package list."
       return 0
   fi
-  
-  # Remove the package from the systemPackages block, using sudo
+
   sudo sed -i "/environment\.systemPackages/,/\]/ s/\b$PACKAGE\b//g" "$CONFIG_FILE"
   sudo sed -i "/environment\.systemPackages/,/\]/ s/\s\+/ /g" "$CONFIG_FILE" 
   sudo sed -i "/environment\.systemPackages/,/\]/ s/ \]$/]/" "$CONFIG_FILE"
 
-  echo "edit: '$PACKAGE' removed from the system package list."
+  task_with_timer "uninstalling $PACKAGE" "sudo nixos-rebuild switch" "error" "uninstall failed" "uninstalled $PACKAGE"
+}
+
+tui() {
+  dialog --title "Nixedit" --menu "What opperation are you choosing?" 0 0 0 1 "Rebuild"
 }
 
 version() {
-  echo nixedit 0.81
+  echo nixedit 0.85
 }
 
 help() {
@@ -398,12 +481,14 @@ Singular options:
   
   --search        Search packages
   --config        Open configuration
-  --list          List pervious generations
   --add           Add package to configuration
   --remove        Remove package from configuration
+  --install       Install package to system
+  --uninstall     Uninstall package from system
   --upload        Upload configuration
   --update        Update the nixpkgs & search, databases
   --rebuild       Rebuild system
+  --list          List pervious generations
   --delete        Delete older packages
   --optimise      Optimize Nix storage
   --graph         Browse dependency graph
@@ -423,13 +508,11 @@ If no option is provided, the default operation will:
 #  --check         Check search functionality
 }
 
-# Check if any arguments were provided
 if [ $# -eq 0 ]; then
   default_operation
   exit 0
 fi
 
-# Check which argument was passed
 case "$1" in
   --github)
     github
@@ -475,6 +558,15 @@ case "$1" in
     ;;
   --remove)
     remove "$@"
+    ;;
+  --install)
+    install "$@"
+    ;;
+  --uninstall)
+    uninstall "$@"
+    ;;
+  --tui)
+    tui
     ;;
   --check)
     check
