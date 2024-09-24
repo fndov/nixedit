@@ -459,10 +459,6 @@ uninstall() {
   task_with_timer "uninstalling $PACKAGE" "sudo nixos-rebuild switch" "error" "uninstall failed" "uninstalled $PACKAGE"
 }
 
-tui() {
-  dialog --title "Nixedit" --menu "What opperation are you choosing?" 0 0 0 1 "Rebuild"
-}
-
 version() {
   echo nixedit 0.85
 }
