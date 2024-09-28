@@ -707,6 +707,7 @@ update_package_age > /dev/null
       done < <(list --list)
       
       dialog --title "List restore points" --msgbox "    Configurations can be found in\n        .nixedit/Configuration \n\n$output" 0 0
+      tui; exit 0
       ;;
     9)
       # Action for "Delete restore points"
