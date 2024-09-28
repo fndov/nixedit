@@ -811,6 +811,7 @@ Setup commands:
 Singular options:
   --help          Show this help message and exit
   --version       Display current nixedit version
+  --TUI           Full terminal user interface
   
   --search        Search packages
   --config        Open configuration
