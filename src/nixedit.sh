@@ -516,7 +516,19 @@ update_package_age > /dev/null
           tui; exit 0
       fi
       
-      tui_search=$(nix search nixpkgs | grep "$USER_INPUT" | awk -F "legacyPackages.x86_64-linux." '{print $2}' | awk '{print $1}' | sed 's/\..*//' | sort -u | grep -v '^$' | grep "^$USER_INPUT" | sed 's/\x1B\[[0-9;]*[a-zA-Z]//g')
+      tui_search=$(
+        {
+          nix search nixpkgs 2>/dev/null | 
+          grep "$USER_INPUT" | 
+          awk -F "legacyPackages.x86_64-linux." '{print $2}' | 
+          awk '{print $1}' | 
+          sed 's/\..*//' | 
+          sort -u | 
+          grep -v '^$' | 
+          grep "^$USER_INPUT" | 
+          sed 's/\x1B\[[0-9;]*[a-zA-Z]//g'
+        } 
+      )
       
       package_array=()
       menu_items=""
@@ -541,7 +553,7 @@ update_package_age > /dev/null
       
       selected_package="${package_array[$((selected-1))]}"
       
-      dialog --title "NixPKG Search" --yes-label "Install" --no-label "Cancel" --extra-button --extra-label "Add Package" --yesnbao "\nWhat would you like to do with this package?\n\nSelected: $selected_package" 9 54
+      dialog --title "NixPKG Search" --yes-label "Install" --no-label "Cancel" --extra-button --extra-label "Add Package" --yesno "\nWhat would you like to do with this package?\n\nSelected: $selected_package" 9 54
       
       case $? in
           0)
