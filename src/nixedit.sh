@@ -109,7 +109,6 @@ EOF
 }
 
 default_operation() {
-  update_package_age > /dev/null
   if ! sudo true; then
     exit 1
   fi
@@ -239,21 +238,6 @@ github() {
   fi
 }
 
-delete() {
-  sudo true
-  
-  if [ -z "$2" ]; then
-    days=$(<"$HOME/.cache/nixedit/package-age.txt")
-  elif [[ "$2" =~ ^[0-9]+$ ]]; then
-    days="$2"
-  else
-    echo "Usage: nixedit --delete [num] 1-100 days old, default 1"
-    return 1
-  fi
-  task_with_timer "deleting old packages" "sudo nix-collect-garbage --delete-older-than ${days}d" "error" "failed to delete packages" "deletion complete"
-}
-
-
 update_package_age() {
     local CACHE_DIR="$HOME/.cache/nixedit"
     local PACKAGE_AGE_FILE="$CACHE_DIR/package-age.txt"
@@ -270,6 +254,20 @@ update_package_age() {
         echo "$CURRENT_AGE" > "$PACKAGE_AGE_FILE" # Write the new age
         echo "Updated $PACKAGE_AGE_FILE to value $CURRENT_AGE."
     fi
+}
+
+delete() {
+  sudo true
+  update_package_age > /dev/null
+  if [ -z "$2" ]; then
+    days=$(<"$HOME/.cache/nixedit/package-age.txt")
+  elif [[ "$2" =~ ^[0-9]+$ ]]; then
+    days="$2"
+  else
+    echo "Usage: nixedit --delete [num] 1-100 days old, default 1"
+    return 1
+  fi
+  task_with_timer "deleting old packages" "sudo nix-collect-garbage --delete-older-than ${days}d" "error" "failed to delete packages" "deletion complete"
 }
 
 debug() {
@@ -489,7 +487,6 @@ uninstall() {
 }
 
 tui() {
-update_package_age > /dev/null
     if ! sudo true; then
     exit 1
   fi
@@ -592,12 +589,10 @@ update_package_age > /dev/null
       esac
       ;;
     2)
-      # Action for "Help"
       dialog --title "Nixedit Help." --msgbox "TUI Usage: Designed to be user friendly,\n\nIf there's an issue with the TUI please submit an isssue to https://github.com/fndov/nixedit.\n\nCLI Usage: NixOS build automating utility, for your Configuration & System. Streamlined process.       \n\nSetup commands:       \n  --github        Connect your dedicated github repository to store backups.       \n         \nSingular options:       \n  --help          Show this help message and exit       \n  --version       Display current nixedit version       \n         \n  --search        Search packages       \n  --config        Open configuration       \n  --add           Add package to configuration       \n  --remove        Remove package from configuration       \n  --install       Install package to system       \n  --uninstall     Uninstall package from system       \n  --upload        Upload configuration       \n  --update        Update the nixpkgs & search, databases       \n  --rebuild       Rebuild system       \n  --list          List pervious generations       \n  --delete        Delete older packages       \n  --optimise      Optimize Nix storage       \n  --graph         Browse dependency graph       \n  --find          Find local packages       \n               \nIf no option is provided, the default operation will:       \n  - Perform a search       \n  - Open the configuration file for editing       \n  - Update system packages       \n  - Rebuild the system       \n  - Upload configuration to repository       \n  - Delete old packages       \n  - Optimise package storage\n\n\n                                    Experiments unsupported." 0 0
       tui; exit 0
       ;;
     3)
-      # Action for "Connect Github"
       repo=$(dialog --title "Connect GitHub" --inputbox "Link repository for configuration storage.\n\nVisit this link and create a dedicated repository.\n https://github.com/new\n\n Every upload will push here" 14 60 3>&1 1>&2 2>&3)
 
       if [ -z "$repo" ]; then
@@ -633,7 +628,6 @@ update_package_age > /dev/null
         fi
       ;;
     4)
-      # Action for "Configuration"
       if 
       sudo -S dialog --editbox /etc/nixos/configuration.nix 0 0
       then
@@ -643,10 +637,9 @@ update_package_age > /dev/null
         dialog --infobox "Changes canceled, nothing new to build." 4 43
       sleep 3
       fi
-      tui; exit 0 # Return
+      tui; exit 0
       ;;
     5)
-      # Action for "Backup computer"
       dialog --infobox "Uploading configuration to GitHub..." 4 40
       output=$(upload)
       if echo "$output" | grep -q "complete"; then
@@ -660,7 +653,6 @@ update_package_age > /dev/null
       tui; exit 0
       ;;
     6)
-      # Action for "Install software"
       USER_INPUT=$(dialog --title "NixPKG Install" --inputbox "Name the package you're trying to install" 8 45 3>&1 1>&2 2>&3 3>&-)
       
       dialog --title "NixPKG Install" --infobox "Your system is currently building.\nInstalling: $USER_INPUT" 4 40
@@ -682,7 +674,6 @@ update_package_age > /dev/null
       fi
       ;;
     7)
-      # Action for "Uninstall software"
       USER_INPUT=$(dialog --title "NixPKG Uninstall" --inputbox "Name the package you're trying to uninstall" 8 47 3>&1 1>&2 2>&3 3>&-)
       dialog --title "NixPKG Uninstall" --infobox "Uninstalling package '$USER_INPUT'. Your system is currently building..." 4 74
 
@@ -700,7 +691,6 @@ update_package_age > /dev/null
       fi
       ;;
     8)
-      # Action for "List restore points"
       output=""
       while IFS= read -r line; do
           output+="$line\n\n"  
@@ -710,7 +700,6 @@ update_package_age > /dev/null
       tui; exit 0
       ;;
     9)
-      # Action for "Delete restore points"
       USER_INPUT=$(dialog --title "Delete restore points" --rangebox "Select the maximum age for restore points (1-30 days)" 9 57 1 30 7 3>&1 1>&2 2>&3 3>&-)
       
       if [[ -z "$USER_INPUT" ]]; then
@@ -747,7 +736,6 @@ update_package_age > /dev/null
       fi
       ;;
     10)
-      # Action for "Optimise storage"
       dialog --title "Optimise storage" --infobox "\n  Currently working on system symlinks.\n\n  This may take 5-10 minutes." 8 50
       output=$(optimise --optimise)
 
@@ -766,19 +754,17 @@ update_package_age > /dev/null
       fi
       ;;
     11)
-      # Action for "Rebuild & Reboot"
       dialog --title "Rebuild & Reboot" --infobox "\n  Rebuilding system, computer will automatically reboot when done. \n\n  This may take 1-3 minutes. depending if the kernel is compiling." 8 72
       output=$(optimise --optimise)
 
       if echo "$output" | grep -q "complete"; then
         dialog --title "Rebuild & Reboot" --infobox "\n  Rebuild complete, computer will automatically reboot when done. \n\n  Last phases: Update Upload Delete Optimise | ~1 minute left." 8 72
 
-        update_package_age > /dev/null echo 1
-        update_system > /dev/null; echo 5
-        update_search > /dev/null; echo 6
-        upload > /dev/null; echo 8
-        delete > /dev/null; echo 9
-        optimise > /dev/null; echo 10
+        update_system > /dev/null
+        update_search > /dev/null
+        upload > /dev/null
+        delete > /dev/null
+        optimise > /dev/null
 
         reboot
         
@@ -811,7 +797,7 @@ Setup commands:
 Singular options:
   --help          Show this help message and exit
   --version       Display current nixedit version
-  --TUI           Full terminal user interface
+  --tui           Full terminal user interface
   
   --search        Search packages
   --config        Open configuration
