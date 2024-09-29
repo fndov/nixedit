@@ -589,11 +589,49 @@ tui() {
       esac
       ;;
     2)
-      dialog --title "Nixedit Help." --msgbox "TUI Usage: Designed to be user friendly,\n\nIf there's an issue with the TUI please submit an isssue to https://github.com/fndov/nixedit.\n\nCLI Usage: NixOS build automating utility, for your Configuration & System. Streamlined process.       \n\nSetup commands:       \n  --github        Connect your dedicated github repository to store backups.       \n         \nSingular options:       \n  --help          Show this help message and exit       \n  --version       Display current nixedit version       \n         \n  --search        Search packages       \n  --config        Open configuration       \n  --add           Add package to configuration       \n  --remove        Remove package from configuration       \n  --install       Install package to system       \n  --uninstall     Uninstall package from system       \n  --upload        Upload configuration       \n  --update        Update the nixpkgs & search, databases       \n  --rebuild       Rebuild system       \n  --list          List pervious generations       \n  --delete        Delete older packages       \n  --optimise      Optimize Nix storage       \n  --graph         Browse dependency graph       \n  --find          Find local packages       \n               \nIf no option is provided, the default operation will:       \n  - Perform a search       \n  - Open the configuration file for editing       \n  - Update system packages       \n  - Rebuild the system       \n  - Upload configuration to repository       \n  - Delete old packages       \n  - Optimise package storage\n\n\n                                    Experiments unsupported." 0 0
+      dialog --title "Nixedit Help." --msgbox "
+\nUsage: nixedit [--OPTION]
+\n
+\nNixOS build automating utility, for your Configuration & System.
+\n   
+\nSettings:
+\n  --github        Connect your dedicated GitHub repository to store backups
+\n  
+\nInfo commands:
+\n  --help          Show this help message and exit
+\n  --version       Display current nixedit version
+\n  
+\nTerminal user interface:
+\n  --tui           Open dialog  
+\n  
+\nSingular options:   
+\n  --search        Search packages
+\n  --config        Open configuration
+\n  --add           Add package to configuration
+\n  --remove        Remove package from configuration
+\n  --install       Install package to system
+\n  --uninstall     Uninstall package from system
+\n  --upload        Upload configuration
+\n  --update        Update the nixpkgs & search, databases
+\n  --rebuild       Rebuild system
+\n  --list          List pervious generations
+\n  --delete        Delete older packages
+\n  --optimise      Optimize Nix storage
+\n  --graph         Browse dependency graph
+\n  --find          Find local packages
+\n                
+\nIf no option is provided, the default operation will:
+\n  - Perform a search
+\n  - Open the configuration file for editing
+\n  - Update system packages
+\n  - Rebuild the system
+\n  - Upload configuration
+\n  - Delete old packages
+\n  - Optimise package storage" 0 0
       tui; exit 0
       ;;
     3)
-      repo=$(dialog --title "Connect GitHub" --inputbox "Link repository for configuration storage.\n\nVisit this link and create a dedicated repository.\n https://github.com/new\n\n Every upload will push here" 14 60 3>&1 1>&2 2>&3)
+      repo=$(dialog --title "Connect GitHub" --inputbox "Link repository for configuration storage.\n\nVisit this link and create a dedicated repository.\nhttps://github.com/new\n\nEvery upload will push here" 14 60 3>&1 1>&2 2>&3)
 
       if [ -z "$repo" ]; then
         tui; exit 0
@@ -640,16 +678,15 @@ tui() {
       tui; exit 0
       ;;
     5)
-      dialog --infobox "Uploading configuration to GitHub..." 4 40
+      dialog --title "Backup computer" --infobox "\n Uploading configuration to GitHub..." 6 42
       output=$(upload)
       if echo "$output" | grep -q "complete"; then
-          message="Upload successful!"
+        dialog --title "Backup computer" --msgbox "\n Configurations have been uploaded to GitHub" 7 50
       elif echo "$output" | grep -q "failed"; then
-          message="Upload failed."
+        dialog --title "Backup computer" --msgbox "\n        Failed to upload configuration.\n\n  Check network or connect GitHub repository" 10 50
       else
-          message="Upload status unknown. No clear indication of success or failure."
+        dialog --title "Backup computer" --msgbox "\n                Upload status unknown.\n\n      No clear indication of success or failure." 9 60
       fi
-      dialog --msgbox "$message" 5 40
       tui; exit 0
       ;;
     6)
@@ -789,16 +826,19 @@ version() {
 help() {
   echo "Usage: nixedit [--OPTION]
 
-NixOS build automating utility, for your Configuration & System. Streamlined process.
+NixOS build automating utility, for your Configuration & System.
 
-Setup commands:
-  --github        Connect your dedicated github repository to store backups.
-  
-Singular options:
+Settings:
+  --github        Connect your dedicated GitHub repository to store backups
+
+Info commands:
   --help          Show this help message and exit
   --version       Display current nixedit version
-  --tui           Full terminal user interface
-  
+
+Terminal user interface:
+  --tui           Open dialog  
+
+Singular options:
   --search        Search packages
   --config        Open configuration
   --add           Add package to configuration
@@ -819,7 +859,7 @@ If no option is provided, the default operation will:
   - Open the configuration file for editing
   - Update system packages
   - Rebuild the system
-  - Upload configuration to repository
+  - Upload configuration
   - Delete old packages
   - Optimise package storage"
 
