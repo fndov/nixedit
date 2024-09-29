@@ -12,7 +12,6 @@ pkgs.stdenv.mkDerivation {
 
   buildInputs = [
     pkgs.bash
-    pkgs.nix-tree
     pkgs.fzf
     pkgs.jq
     pkgs.micro
@@ -30,7 +29,7 @@ pkgs.stdenv.mkDerivation {
 
     # Wrap nixedit to include the necessary dependencies in PATH
     wrapProgram $out/bin/nixedit --prefix PATH : \
-      "${pkgs.bash}/bin:${pkgs.nix-tree}/bin:${pkgs.fzf}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
+      "${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
   '';
 
   meta = with pkgs.lib; {
