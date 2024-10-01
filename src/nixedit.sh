@@ -363,7 +363,7 @@ add() {
   fi
   
   for PACKAGE in "${@:2}"; do
-    
+
     if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "error: file not found: $CONFIG_FILE"
         return 1
@@ -428,7 +428,7 @@ install() {
 
   if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
       echo "error: '$PACKAGE' is already in system package list."
-      return 0  # No need to continue if package already exists
+      return 0  
   fi
 
   new_packages+=("$PACKAGE")
@@ -497,31 +497,25 @@ tui() {
   fi
 
   prompt() {
-    # Check if the flag is empty (null) to determine if the prompt should run
     if [[ -n "$prompt_flag" ]]; then
       echo "Prompt has already been successfully executed. Skipping..."
-      return  # Skip the function if the flag is not empty
+      return 
     fi
   
-    # Display password dialog
     password=$(dialog --insecure --title "Password for Nixedit" --passwordbox "Enter your root password" 8 40 3>&1 1>&2 2>&3)
   
-    # Check if the user pressed Cancel or left the input empty
     if [[ -z "$password" ]]; then
       clear; exit 0
     fi
   
-    # Invalidate any previous sudo sessions
     sudo -k
   
-    # Validate the password
     echo -n "$password" | sudo -S true 2>/dev/null
     if [ $? -ne 0 ]; then
       dialog --title "Password Error" --infobox " Incorrect password." 4 26; sleep 2
       clear; exit 0
     fi
   
-    # Set the flag to a non-empty value to indicate success
     prompt_flag="success"
   }
 
