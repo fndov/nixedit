@@ -109,6 +109,10 @@ EOF
 }
 
 default_operation() {
+  if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
   if ! sudo true; then
     exit 1
   fi
@@ -487,9 +491,42 @@ uninstall() {
 }
 
 tui() {
-    if ! sudo true; then
+  if [ "$UID" -eq 0 ]; then
+    echo "There's no need to use sudo in the command."
     exit 1
   fi
+
+  prompt() {
+    # Check if the flag is empty (null) to determine if the prompt should run
+    if [[ -n "$prompt_flag" ]]; then
+      echo "Prompt has already been successfully executed. Skipping..."
+      return  # Skip the function if the flag is not empty
+    fi
+  
+    # Display password dialog
+    password=$(dialog --insecure --title "Password for Nixedit" --passwordbox "Enter your root password" 8 40 3>&1 1>&2 2>&3)
+  
+    # Check if the user pressed Cancel or left the input empty
+    if [[ -z "$password" ]]; then
+      clear; exit 0
+    fi
+  
+    # Invalidate any previous sudo sessions
+    sudo -k
+  
+    # Validate the password
+    echo -n "$password" | sudo -S true 2>/dev/null
+    if [ $? -ne 0 ]; then
+      dialog --title "Password Error" --infobox " Incorrect password." 4 26; sleep 2
+      clear; exit 0
+    fi
+  
+    # Set the flag to a non-empty value to indicate success
+    prompt_flag="success"
+  }
+
+  prompt
+
   VAR=$(dialog --title "Nixedit" \
     --menu "Select system operation:" 0 0 0 \
       1 "Search packages" \
@@ -667,12 +704,12 @@ tui() {
       ;;
     4)
       if 
-      sudo -S dialog --editbox /etc/nixos/configuration.nix 0 0
+      echo $password | sudo -S dialog --title "Configuration" --editbox /etc/nixos/configuration.nix 0 0
       then
-        dialog --infobox "Saved changes, pending next build." 4 40
+        dialog --title "Configuration" --infobox "Saved changes, pending next build." 4 40
       sleep 3
       else
-        dialog --infobox "Changes canceled, nothing new to build." 4 43
+        dialog --title "Configuration" --infobox "Changes canceled, nothing new to build." 4 43
       sleep 3
       fi
       tui; exit 0
@@ -681,7 +718,7 @@ tui() {
       dialog --title "Backup computer" --infobox "\n Uploading configuration to GitHub..." 6 42
       output=$(upload)
       if echo "$output" | grep -q "complete"; then
-        dialog --title "Backup computer" --msgbox "\n Configurations have been uploaded to GitHub" 7 50
+        dialog --title "Backup computer" --msgbox "\n Configurations have been uploaded to GitHub." 7 50
       elif echo "$output" | grep -q "failed"; then
         dialog --title "Backup computer" --msgbox "\n        Failed to upload configuration.\n\n  Check network or connect GitHub repository" 10 50
       else
