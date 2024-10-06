@@ -374,13 +374,10 @@ add() {
         continue
     fi
 
-    # Ensure the start of the block is indented by two levels
     sudo sed -i "/environment\.systemPackages/ s/^  */    /" "$CONFIG_FILE"
     
-    # Add the package with four spaces of indentation
     sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/        $PACKAGE\n    ]/" "$CONFIG_FILE"
 
-    # Ensure the closing bracket is indented by two levels
     sudo sed -i "/environment\.systemPackages/,/\]/ s/^\(\s*\]\);$/    ];/" "$CONFIG_FILE"
 
     echo "edit: '$PACKAGE' added to system package list."
@@ -408,19 +405,14 @@ remove() {
         continue
     fi
 
-    # Remove the package and clean up spaces
     sudo sed -i "/environment\.systemPackages/,/\]/ s/\b$PACKAGE\b//g" "$CONFIG_FILE"
     
-    # Ensure all remaining packages are indented by four spaces
     sudo sed -i "/environment\.systemPackages/,/\]/ s/^ *\([^ ]\)/    \1/" "$CONFIG_FILE"
 
-    # Ensure the start of the block is indented by two levels
     sudo sed -i "/environment\.systemPackages/ s/^  */  /" "$CONFIG_FILE"
 
-    # Ensure the closing bracket is indented by two levels
     sudo sed -i "/environment\.systemPackages/,/\]/ s/^\(\s*\]\);$/  ];/" "$CONFIG_FILE"
 
-    # Remove empty lines left behind after removing packages
     sudo sed -i "/environment\.systemPackages/,/\]/ {/^ *$/d}" "$CONFIG_FILE"
 
     echo "edit: '$PACKAGE' removed from system package list."
