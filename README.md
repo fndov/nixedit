@@ -30,11 +30,11 @@ git clone https://github.com/fndov/nixedit.git .
 Step 2. Include in your configuration.nix
 ```
 nixpkgs.config.packageOverrides = pkgs: {
-nixedit = pkgs.callPackage /home/USERNAME/.nixedit/default.nix { };
+  nixedit = pkgs.callPackage /home/USERNAME/.nixedit/default.nix { };
 };
 
 environment.systemPackages = with pkgs; [
-nixedit
+  nixedit
 ];
 ```
 Step 3. Install the package.
