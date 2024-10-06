@@ -6,7 +6,7 @@ NixOS build automating utility, for your Configuration & System.
 - Integrates with Github to upload backups of your configuration.
 
 ## Screenshot
-![Screenshot_20241005_183937-1](https://github.com/user-attachments/assets/5bae5b05-43d9-471f-93fd-3eb8ddb0c86d)
+![Screenshot_20241006_140854](https://github.com/user-attachments/assets/5686d98d-a7c4-4787-8c96-e34a07b081ce)
 ### Installation Instructions
 You can install `nixedit` using the provided `default.nix` file.
 #### Environment:
