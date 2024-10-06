@@ -16,6 +16,7 @@ pkgs.stdenv.mkDerivation {
     pkgs.jq
     pkgs.micro
     pkgs.git
+    pkgs.nix-tree
   ];
 
   installPhase = ''
@@ -29,7 +30,7 @@ pkgs.stdenv.mkDerivation {
 
     # Wrap nixedit to include the necessary dependencies in PATH
     wrapProgram $out/bin/nixedit --prefix PATH : \
-      "${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
+      "${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.nix-tree}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
   '';
 
   meta = with pkgs.lib; {
