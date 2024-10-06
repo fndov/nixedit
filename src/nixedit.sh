@@ -930,7 +930,13 @@ case "$1" in
   --help)
     help
     ;;
+  -h)
+    help
+    ;;
   --version)
+    version
+    ;;
+  -v)
     version
     ;;
   --graph)
@@ -939,10 +945,19 @@ case "$1" in
   --search)
     search 
     ;;
+  -s)
+    search
+    ;;
   --config)
     config
     ;;
+  -c)
+    config
+    ;;
   --rebuild)
+    rebuild
+    ;;
+  -r)
     rebuild
     ;;
   --list)
@@ -963,10 +978,19 @@ case "$1" in
   --install)
     install "$@"
     ;;
+  -i)
+    install "$@"
+    ;;
   --uninstall)
     uninstall "$@"
     ;;
+  -u)
+    uninstall "$@"
+    ;;
   --tui)
+    tui
+    ;;
+  -t)
     tui
     ;;
   --check)
@@ -981,4 +1005,3 @@ case "$1" in
     exit 1
     ;;
 esac
-
