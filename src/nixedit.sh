@@ -374,11 +374,11 @@ add() {
         continue
     fi
 
-    sudo sed -i "/environment\.systemPackages/ s/^  */    /" "$CONFIG_FILE"
+    sudo sed -i "/environment\.systemPackages/ s/^  */  /" "$CONFIG_FILE"
     
-    sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/        $PACKAGE\n    ]/" "$CONFIG_FILE"
+    sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/  $PACKAGE\n    ]/" "$CONFIG_FILE"
 
-    sudo sed -i "/environment\.systemPackages/,/\]/ s/^\(\s*\]\);$/    ];/" "$CONFIG_FILE"
+    sudo sed -i "/environment\.systemPackages/,/\]/ s/^\(\s*\]\);$/  ];/" "$CONFIG_FILE"
 
     echo "edit: '$PACKAGE' added to system package list."
 
@@ -443,7 +443,7 @@ install() {
 
   new_packages+=("$PACKAGE")
 
-  sudo sed -i "/environment\.systemPackages/,/\]/ s/\]/  $PACKAGE\n]/" "$CONFIG_FILE"
+  add --add $PACKAGE > /dev/null
 
   if [[ ${#new_packages[@]} -gt 0 ]]; then
     local task_description="installing ${new_packages[*]}"
@@ -493,9 +493,7 @@ uninstall() {
       return 0
   fi
 
-  sudo sed -i "/environment\.systemPackages/,/\]/ s/\b$PACKAGE\b//g" "$CONFIG_FILE"
-  sudo sed -i "/environment\.systemPackages/,/\]/ s/\s\+/ /g" "$CONFIG_FILE" 
-  sudo sed -i "/environment\.systemPackages/,/\]/ s/ \]$/]/" "$CONFIG_FILE"
+  remove --remove $PACKAGE > /dev/null
 
   task_with_timer "uninstalling $PACKAGE" "sudo nixos-rebuild switch" "error" "uninstall failed" "uninstalled $PACKAGE"
 }
@@ -861,7 +859,7 @@ clear
 }
 
 version() {
-  echo nixedit 0.9
+  echo nixedit 0.9.5
 }
 
 help() {
