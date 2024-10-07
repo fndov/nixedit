@@ -182,6 +182,13 @@ check() {
 }
 
 config() {
+    if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
   sudo micro /etc/nixos/configuration.nix
 }
 
@@ -261,7 +268,13 @@ update_package_age() {
 }
 
 delete() {
-  sudo true
+  if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
   update_package_age > /dev/null
   if [ -z "$2" ]; then
     days=$(<"$HOME/.cache/nixedit/package-age.txt")
@@ -355,6 +368,13 @@ find() {
 }
 
 add() {
+    if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   if [[ "$#" -lt 2 ]]; then
@@ -386,6 +406,13 @@ add() {
 }
 
 remove() {
+  if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   if [[ "$#" -lt 2 ]]; then
@@ -421,6 +448,13 @@ remove() {
 }
 
 install() {
+  if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   local new_packages=()
 
@@ -859,7 +893,7 @@ clear
 }
 
 version() {
-  echo nixedit 0.9.5
+  echo nixedit 0.9
 }
 
 help() {
