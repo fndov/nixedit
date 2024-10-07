@@ -893,7 +893,7 @@ clear
 }
 
 version() {
-  echo nixedit 0.9
+  echo nixedit 0.9.5
 }
 
 help() {
