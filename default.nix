@@ -2,7 +2,7 @@
 
 pkgs.stdenv.mkDerivation {
   pname = "nixedit";
-  version = "0.9";
+  version = "0.9.5";
 
   src = ./src;
 
