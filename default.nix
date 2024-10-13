@@ -2,7 +2,7 @@
 
 pkgs.stdenv.mkDerivation {
   pname = "nixedit";
-  version = "0.9.5";
+  version = "0.9";
 
   src = ./src;
 
@@ -17,6 +17,7 @@ pkgs.stdenv.mkDerivation {
     pkgs.micro
     pkgs.git
     pkgs.nix-tree
+    pkgs.coreutils
   ];
 
   installPhase = ''
@@ -30,7 +31,7 @@ pkgs.stdenv.mkDerivation {
 
     # Wrap nixedit to include the necessary dependencies in PATH
     wrapProgram $out/bin/nixedit --prefix PATH : \
-      "${pkgs.bash}/bin:${pkgs.fzf}/bin:${pkgs.nix-tree}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
+      "${pkgs.bash}/bin:${pkgs.coreutils}/bin:${pkgs.nix-tree}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
   '';
 
   meta = with pkgs.lib; {
@@ -39,3 +40,4 @@ pkgs.stdenv.mkDerivation {
     maintainers = [ maintainers.miyu ];
   };
 }
+
