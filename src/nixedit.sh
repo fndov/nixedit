@@ -201,8 +201,7 @@ rebuild() {
   fi
 
   if [ $# -gt 2 ]; then
-    echo "Usage: --rebuild <profile_name>"
-    echo "Povided <profile-name> a profile will be built, otherwise a generation will be built."
+    echo "Usage: nixedit --rebuild/-r <profile_name>"
     exit 1
   fi
 
@@ -315,7 +314,7 @@ delete() {
   PACKAGE_AGE=$(<"$HOME/.cache/nixedit/package-age.txt")
 
   if [[ -n "$3" ]]; then
-    echo "Usage: nixedit --delete <profile-name>/<number> days old packages, default $PACKAGE_AGE"
+    echo "Usage: nixedit --delete/-d <profile-name>/<number> days old packages, default $PACKAGE_AGE"
     exit 1
   fi
 
@@ -482,7 +481,7 @@ add() {
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   if [[ "$#" -lt 2 ]]; then
-      echo "Usage: --add <package-name> <package-name> ..."
+      echo "Usage: nixedit --add <package-name> <package-name> ..."
       return 1
   fi
   
@@ -520,7 +519,7 @@ remove() {
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   if [[ "$#" -lt 2 ]]; then
-      echo "Usage: --remove <package-name> <package-name> ..."
+      echo "Usage: nixedit --remove <package-name> <package-name> ..."
       return 1
   fi
   
@@ -552,13 +551,15 @@ remove() {
 }
 
 install() {
+
   if [ "$UID" -eq 0 ]; then
-  echo "There's no need to use sudo in the command."
-  exit 1
+    echo "There's no need to use sudo in the command."
+    exit 1
   fi
   if ! sudo true; then
     exit 1
   fi
+  
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   local new_packages=()
 
@@ -655,14 +656,21 @@ install() {
 
     return 0  
   else
-    echo "Usage: --install <package-name> <profile-name>"
+    echo "Usage: nixedit --install/-i <package-name> <profile-name>"
     return 1
   fi
 }
 
 uninstall() {
 
-
+  if [ "$UID" -eq 0 ]; then
+    echo "There's no need to use sudo in the command."
+    exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
+  
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   local PACKAGE="$2"
@@ -1087,8 +1095,7 @@ usage() {
   --find <package-name>."
 }
 
-help() { echo "Nixedit Help
-See 'nixedit --usage'.
+help() { echo "See 'nixedit --usage'.
 
 A NixOS Multipurpose CLI/TUI Utility.
 
