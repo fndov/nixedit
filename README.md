@@ -1,5 +1,5 @@
 ## Nixedit
-NixOS build automating utility, for your Configuration & System.
+A NixOS Multipurpose CLI/TUI Utility.
 ### Features:
 - Full Terminal User Interface & Command line usage.
 - Search Configure Build Backup Update Delete Optimise in one step.
