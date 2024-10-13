@@ -837,7 +837,7 @@ tui() {
       dialog --title "Nixedit Help." --msgbox "
         \nUsage: nixedit [--OPTION]
         \n
-        \nNixOS build automating utility, for your Configuration & System.
+        \nA NixOS Multipurpose CLI/TUI Utility.
         \n   
         \nSettings:
         \n  --github        Connect your dedicated GitHub repository to store backups
@@ -1090,7 +1090,7 @@ usage() {
 help() { echo "Nixedit Help
 See 'nixedit --usage'.
 
-NixOS build automating utility, for your Configuration & System.
+A NixOS Multipurpose CLI/TUI Utility.
 
 Settings:
   --github        Connect your dedicated GitHub repository to store backups
