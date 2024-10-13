@@ -29,7 +29,7 @@ Singular options: (some hame short options '-i')
   --rebuild       Rebuild system
   --profile       List existing profiles
   --generation    List existing generations
-  --delete        Delete older packages
+  --delete        Delete packages & profiles
   --optimise      Optimize Nix storage
   --graph         Browse dependency graph
   --find          Find local packages
