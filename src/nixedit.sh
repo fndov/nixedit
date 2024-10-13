@@ -565,8 +565,6 @@ install() {
   PACKAGE="$2"
 
   if [[ "$#" -eq 2 ]]; then
-    echo "You have provided 1 argument."
-
       if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "error: file not found: $CONFIG_FILE"
         return 1
@@ -612,8 +610,6 @@ install() {
 
     return 0
   elif [[ "$#" -eq 3 ]]; then
-    echo "You have provided 2 arguments."
-
       if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "error: file not found: $CONFIG_FILE"
         return 1
