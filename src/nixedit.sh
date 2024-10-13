@@ -452,8 +452,8 @@ profile() {
   profiles=$(ls /nix/var/nix/profiles/system-profiles/ 2>/dev/null | grep -v '\-link$')
 
   if [ -z "$profiles" ]; then
-    echo "No profiles found."
-    echo "Setup profiles with ... debug"
+    echo "error: no profiles found."
+    echo "info: create profiles with 'nixedit --profile/-p <profile-name>'."
   else
     echo "$profiles" | while read -r profile; do
       echo "profile: $profile"
