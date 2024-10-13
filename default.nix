@@ -1,24 +1,38 @@
-{ pkgs ? import <nixpkgs> { } }:
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  bash,
+  fzf,
+  jq,
+  micro,
+  git,
+  nix-tree,
+  coreutils,
+  makeWrapper,
+  dialog,
+}:
 
-pkgs.stdenv.mkDerivation {
+stdenv.mkDerivation {
   pname = "nixedit";
   version = "1.0.0";
 
   src = ./src;
 
   nativeBuildInputs = [
-    pkgs.makeWrapper
+    makeWrapper
   ];
 
   buildInputs = [
-    pkgs.bash
-    pkgs.fzf
-    pkgs.jq
-    pkgs.micro
-    pkgs.git
-    pkgs.nix-tree
-    pkgs.coreutils
-  ];
+      bash
+      fzf
+      jq
+      micro
+      git
+      nix-tree
+      coreutils
+      dialog
+    ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -31,7 +45,7 @@ pkgs.stdenv.mkDerivation {
 
     # Wrap nixedit to include the necessary dependencies in PATH
     wrapProgram $out/bin/nixedit --prefix PATH : \
-      "${pkgs.bash}/bin:${pkgs.coreutils}/bin:${pkgs.nix-tree}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
+      "${bash}/bin:${coreutils}/bin:${nix-tree}/bin:${jq}/bin:${micro}/bin:${git}/bin:${fzf}/bin:${dialog}/bin"
   '';
 
   doInstallCheck = true;
@@ -41,13 +55,14 @@ pkgs.stdenv.mkDerivation {
       exit 1
     fi
 
-    $out/bin/nixedit --help 
+    $out/bin/nixedit --help > /dev/null
   '';
 
-  meta = with pkgs.lib; {
+  meta = {
     homepage = "https://github.com/fndov/nixedit";
     description = "A NixOS Multipurpose CLI/TUI Utility";
-    license = licenses.gpl3;
-    maintainers = with maintainers; [ miyu ];
+    license = lib.licenses.gpl3;
+    mainProgram = "nixedit";
+    maintainers = with lib.maintainers; [ miyu ];
   };
 }
