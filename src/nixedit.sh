@@ -1,5 +1,4 @@
 SCRIPT_DIR=$(dirname "$0")
-
 nsearch() {
   CACHE_DIR="${NSEARCH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nixedit}"
   FZF_CMD="${NSEARCH_FZF_CMD:-fzf --multi --preview-window=top,3,wrap}"
@@ -117,9 +116,8 @@ default_operation() {
     exit 1
   fi
   update_search
-  search "$@" > /dev/null
-  config
-# list
+  search > /dev/null
+  configre
   update_system
   update_search
   rebuild
@@ -181,7 +179,7 @@ check() {
   nsearch --check
 }
 
-config() {
+configre() {
     if [ "$UID" -eq 0 ]; then
   echo "There's no need to use sudo in the command."
   exit 1
@@ -193,8 +191,39 @@ config() {
 }
 
 rebuild() {
-  sudo true
-  task_with_timer "rebuilding" "sudo nixos-rebuild switch" "error" "rebuild failed" "rebuild complete"
+  if [ "$UID" -eq 0 ]; then
+    echo "There's no need to use sudo in the command."
+    exit 1
+  fi
+
+  if ! sudo true; then
+    exit 1
+  fi
+
+  if [ $# -gt 2 ]; then
+    echo "Usage: --rebuild <profile_name>"
+    echo "Povided <profile-name> a profile will be built, otherwise a generation will be built."
+    exit 1
+  fi
+
+  if [ -n "$2" ]; then
+    profile_name=$2
+    
+    if [[ $profile_name =~ ^[0-9] ]]; then
+      echo "error: profile name cannot start with a number."
+      exit 1
+    fi
+  
+    task_with_timer "rebuilding profile: $profile_name" \
+      "sudo nixos-rebuild switch --profile-name $profile_name" \
+      "error" "rebuild $profile_name profile failed" \
+      "rebuild $profile_name profile complete"
+  else
+    task_with_timer "rebuilding generation" \
+      "sudo nixos-rebuild switch" \
+      "error" "rebuild failed" "rebuild generation complete"
+  fi
+
 }
 
 upload() {
@@ -251,38 +280,65 @@ github() {
 
 update_package_age() {
     local CACHE_DIR="$HOME/.cache/nixedit"
-    local PACKAGE_AGE_FILE="$CACHE_DIR/package-age.txt"
+    local CACHE_FILE="$CACHE_DIR/package-age.txt"
 
     mkdir -p "$CACHE_DIR"
 
-    if [[ ! -f "$PACKAGE_AGE_FILE" ]]; then
-        echo "1" > "$PACKAGE_AGE_FILE"
-        echo "Created $PACKAGE_AGE_FILE with initial value 1."
+    if [[ ! -f "$CACHE_FILE" ]]; then
+        echo "1" > "$CACHE_FILE"
+        echo "Created $CACHE_FILE with value 1."
+        return 0
+    fi
+
+    local CONTENT
+    CONTENT=$(<"$CACHE_FILE")
+
+    if [[ -z "$CONTENT" ]]; then
+        echo "1" > "$CACHE_FILE"
+        echo "Initialized $CACHE_FILE with value 1."
     else
-        local CURRENT_AGE
-        CURRENT_AGE=$(<"$PACKAGE_AGE_FILE") # Read the current age
-        CURRENT_AGE=$((CURRENT_AGE + 1))     # Increment the age
-        echo "$CURRENT_AGE" > "$PACKAGE_AGE_FILE" # Write the new age
-        echo "Updated $PACKAGE_AGE_FILE to value $CURRENT_AGE."
+        echo "$CACHE_FILE already contains data: $CONTENT"
+        return 0
     fi
 }
 
 delete() {
   if [ "$UID" -eq 0 ]; then
-  echo "There's no need to use sudo in the command."
-  exit 1
+    echo "There's no need to use sudo in the command."
+    exit 1
   fi
   if ! sudo true; then
     exit 1
   fi
+
   update_package_age > /dev/null
-  if [ -z "$2" ]; then
-    days=$(<"$HOME/.cache/nixedit/package-age.txt")
+  PACKAGE_AGE=$(<"$HOME/.cache/nixedit/package-age.txt")
+
+  if [[ -n "$3" ]]; then
+    echo "Usage: nixedit --delete <profile-name>/<number> days old packages, default $PACKAGE_AGE"
+    exit 1
+  fi
+
+  if [[ -z "$2" ]]; then
+    days="$PACKAGE_AGE" 
   elif [[ "$2" =~ ^[0-9]+$ ]]; then
     days="$2"
-  else
-    echo "Usage: nixedit --delete [num] 1-100 days old, default 1"
-    return 1
+    if [ "$days" -eq 1 ]; then
+      day_label="day"
+    else
+      day_label="days"
+    fi
+    task_with_timer "deleting packages older than $days $day_label" "sudo nix-collect-garbage --delete-older-than ${days}d" "error" "failed to delete packages" "deletion complete"
+    return 0
+  elif [[ "$2" =~ ^[[:alpha:][:punct:]] ]]; then
+    if ls /nix/var/nix/profiles/system-[0-9]* &> /dev/null; then
+      echo edit: deleted $2 profile.
+      sudo rm -rf /nix/var/nix/profiles/system-profiles/$2* > /dev/null
+    else
+      echo "error: there are no existing generations to fallback on, cannot safely delete profile."
+      exit 1
+    fi
+    return 0  
   fi
   task_with_timer "deleting old packages" "sudo nix-collect-garbage --delete-older-than ${days}d" "error" "failed to delete packages" "deletion complete"
 }
@@ -353,8 +409,56 @@ graph() {
   nix-tree
 }
 
-list() {
-  sudo true && sudo nix-env -p /nix/var/nix/profiles/system --list-generations 
+generation() {
+  if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
+  sudo nix-env -p /nix/var/nix/profiles/system --list-generations 
+}
+
+profile() {
+  if [[ $2 =~ ^[0-9] ]]; then
+    echo "error: profile name cannot start with a number."
+    exit 1
+  fi
+  if [ $# -eq 0 ]; then
+    echo "No arguments provided."
+  elif [ $# -eq 1 ]; then
+    true
+  else
+    if [ "$UID" -eq 0 ]; then
+    echo "There's no need to use sudo in the command."
+    exit 1
+    fi
+    if ! sudo true; then
+      exit 1
+    fi
+    update_search
+    search > /dev/null
+    configre
+    update_system
+    update_search
+    rebuild --rebuild $2
+    upload
+    delete
+    optimise
+    exit 0
+  fi
+
+  profiles=$(ls /nix/var/nix/profiles/system-profiles/ 2>/dev/null | grep -v '\-link$')
+
+  if [ -z "$profiles" ]; then
+    echo "No profiles found."
+    echo "Setup profiles with ... debug"
+  else
+    echo "$profiles" | while read -r profile; do
+      echo "profile: $profile"
+    done
+  fi
 }
 
 find() {
@@ -458,78 +562,150 @@ install() {
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   local new_packages=()
 
-  if [[ "$#" -ne 2 ]]; then
-      echo "Usage: --install <package-name>"
-      return 1
-  fi
-
   PACKAGE="$2"
 
-  if [[ ! -f "$CONFIG_FILE" ]]; then
-      echo "error: file not found: $CONFIG_FILE"
-      return 1
-  fi
+  if [[ "$#" -eq 2 ]]; then
+    echo "You have provided 1 argument."
 
-  if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
-      echo "error: '$PACKAGE' is already in system package list."
-      return 0  
-  fi
+      if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "error: file not found: $CONFIG_FILE"
+        return 1
+      fi
+    
+      if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+        echo "error: '$PACKAGE' is already in system package list."
+        return 0  
+      fi
+    
+      new_packages+=("$PACKAGE")
+    
+      add --add $PACKAGE > /dev/null
+    
+      if [[ ${#new_packages[@]} -gt 0 ]]; then
+          if [[ $profile_name =~ ^[0-9] ]]; then
+          echo "error: profile name cannot start with a number."
+          exit 1
+        fi
+        local task_description="installing ${new_packages[*]}"
+        local command="sudo nixos-rebuild switch"
+        local error_word="error"
+        local error_message="installation failed, '$PACKAGE' may not exist"
+        local success_message="installed ${new_packages[*]}"
+    
+        local start_time=$(date +%s)
+        echo -ne "edit: [ 0 sec ] $task_description\033[0K\r"
+        stopwatch "$task_description" &
+        local stopwatch_pid=$!
+        local output=$($command 2>&1)
+        kill "$stopwatch_pid"
+        wait "$stopwatch_pid" 2>/dev/null
+        local final_time=$(get_elapsed_time "$start_time")
+    
+        if echo "$output" | grep -q "$error_word"; then
+          printf "\rerror: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
+          remove --remove $PACKAGE > /dev/null
+          exit 1
+        else
+          printf "\redit: [ %s ] $success_message.\033[0K\n" "$(format_time "$final_time")"
+        fi
+      fi
 
-  new_packages+=("$PACKAGE")
+    return 0
+  elif [[ "$#" -eq 3 ]]; then
+    echo "You have provided 2 arguments."
 
-  add --add $PACKAGE > /dev/null
+      if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "error: file not found: $CONFIG_FILE"
+        return 1
+      fi
+    
+      if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+        echo "error: '$PACKAGE' is already in system package list."
+        return 0  
+      fi
+    
+      new_packages+=("$PACKAGE")
+    
+      add --add $PACKAGE > /dev/null
+    
+      if [[ ${#new_packages[@]} -gt 0 ]]; then
+          if [[ $profile_name =~ ^[0-9] ]]; then
+          echo "error: profile name cannot start with a number."
+          exit 1
+        fi
+        local task_description="installing ${new_packages[*]} to $3 profile."
+        local command="sudo nixos-rebuild switch --profile-name $3"
+        local error_word="error"
+        local error_message="installation failed, '$PACKAGE' may not exist"
+        local success_message="installed ${new_packages[*]} to $3 profile."
+    
+        local start_time=$(date +%s)
+        echo -ne "edit: [ 0 sec ] $task_description\033[0K\r"
+        stopwatch "$task_description" &
+        local stopwatch_pid=$!
+        local output=$($command 2>&1)
+        kill "$stopwatch_pid"
+        wait "$stopwatch_pid" 2>/dev/null
+        local final_time=$(get_elapsed_time "$start_time")
+    
+        if echo "$output" | grep -q "$error_word"; then
+          printf "\rerror: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
+          remove --remove $PACKAGE > /dev/null
+          exit 1
+        else
+          printf "\redit: [ %s ] $success_message.\033[0K\n" "$(format_time "$final_time")"
+        fi
+      fi
 
-  if [[ ${#new_packages[@]} -gt 0 ]]; then
-    local task_description="installing ${new_packages[*]}"
-    local command="sudo nixos-rebuild switch"
-    local error_word="error"
-    local error_message="installation failed, '$PACKAGE' may not exist"
-    local success_message="installed ${new_packages[*]}"
-
-    local start_time=$(date +%s)
-    echo -ne "edit: [ 0 sec ] $task_description\033[0K\r"
-    stopwatch "$task_description" &
-    local stopwatch_pid=$!
-    local output=$($command 2>&1)
-    kill "$stopwatch_pid"
-    wait "$stopwatch_pid" 2>/dev/null
-    local final_time=$(get_elapsed_time "$start_time")
-
-    if echo "$output" | grep -q "$error_word"; then
-      printf "\rerror: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
-      remove --remove $PACKAGE > /dev/null
-      exit 1
-    else
-      printf "\redit: [ %s ] $success_message.\033[0K\n" "$(format_time "$final_time")"
-    fi
+    return 0  
   else
-    true
+    echo "Usage: --install <package-name> <profile-name>"
+    return 1
   fi
 }
 
 uninstall() {
+
+
   local CONFIG_FILE="/etc/nixos/configuration.nix"
-  
-  if [[ "$#" -ne 2 ]]; then
-      echo "Usage: --uninstall <package-name>"
-      return 1
-  fi
   
   local PACKAGE="$2"
 
-  if [[ ! -f "$CONFIG_FILE" ]]; then
-      echo "error: file not found: $CONFIG_FILE"
-      return 1
-  fi
+  case "$#" in
+    2) 
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "error: file not found: $CONFIG_FILE"
+        return 1
+    fi
 
-  if ! grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
-      echo "error: '$PACKAGE' is not present in system package list."
-      return 0
-  fi
+    if ! grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+        echo "error: '$PACKAGE' is not present in system package list."
+        return 0
+    fi
 
-  remove --remove $PACKAGE > /dev/null
+    remove --remove $PACKAGE > /dev/null
 
-  task_with_timer "uninstalling $PACKAGE" "sudo nixos-rebuild switch" "error" "uninstall failed" "uninstalled $PACKAGE"
+    task_with_timer "uninstalling $PACKAGE" "sudo nixos-rebuild switch" "error" "uninstall failed" "uninstalled $PACKAGE"
+      ;;
+    3) 
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "error: file not found: $CONFIG_FILE"
+        return 1
+    fi
+
+    if ! grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+        echo "error: '$PACKAGE' is not present in system package list."
+        return 0
+    fi
+
+    remove --remove $PACKAGE > /dev/null
+
+    task_with_timer "uninstalling $PACKAGE on $3 profile" "sudo nixos-rebuild switch --profile-name $3" "error" "uninstall failed" "uninstalled $PACKAGE on $3 profiles"
+      ;;
+    *) 
+      echo "Usage: nixedit --uninstall/-u <package-name> <profile-name>"
+      ;;
+  esac
 }
 
 tui() {
@@ -663,44 +839,44 @@ tui() {
       ;;
     2)
       dialog --title "Nixedit Help." --msgbox "
-\nUsage: nixedit [--OPTION]
-\n
-\nNixOS build automating utility, for your Configuration & System.
-\n   
-\nSettings:
-\n  --github        Connect your dedicated GitHub repository to store backups
-\n  
-\nInfo commands:
-\n  --help          Show this help message and exit
-\n  --version       Display current nixedit version
-\n  
-\nTerminal user interface:
-\n  --tui           Open dialog  
-\n  
-\nSingular options:   
-\n  --search        Search packages
-\n  --config        Open configuration
-\n  --add           Add package to configuration
-\n  --remove        Remove package from configuration
-\n  --install       Install package to system
-\n  --uninstall     Uninstall package from system
-\n  --upload        Upload configuration
-\n  --update        Update the nixpkgs & search, databases
-\n  --rebuild       Rebuild system
-\n  --list          List pervious generations
-\n  --delete        Delete older packages
-\n  --optimise      Optimize Nix storage
-\n  --graph         Browse dependency graph
-\n  --find          Find local packages
-\n                
-\nIf no option is provided, the default operation will:
-\n  - Perform a search
-\n  - Open the configuration file for editing
-\n  - Update system packages
-\n  - Rebuild the system
-\n  - Upload configuration
-\n  - Delete old packages
-\n  - Optimise package storage" 0 0
+        \nUsage: nixedit [--OPTION]
+        \n
+        \nNixOS build automating utility, for your Configuration & System.
+        \n   
+        \nSettings:
+        \n  --github        Connect your dedicated GitHub repository to store backups
+        \n  
+        \nInfo commands:
+        \n  --help          Show this help message and exit
+        \n  --version       Display current nixedit version
+        \n  
+        \nTerminal user interface:
+        \n  --tui           Open dialog  
+        \n  
+        \nSingular options:   
+        \n  --search        Search packages
+        \n  --config        Open configuration
+        \n  --add           Add package to configuration
+        \n  --remove        Remove package from configuration
+        \n  --install       Install package to system
+        \n  --uninstall     Uninstall package from system
+        \n  --upload        Upload configuration
+        \n  --update        Update the nixpkgs & search, databases
+        \n  --rebuild       Rebuild system
+        \n  --list          List pervious generations
+        \n  --delete        Delete older packages
+        \n  --optimise      Optimize Nix storage
+        \n  --graph         Browse dependency graph
+        \n  --find          Find local packages
+        \n                
+        \nIf no option is provided, the default operation will:
+        \n  - Perform a search
+        \n  - Open the configuration file for editing
+        \n  - Update system packages
+        \n  - Rebuild the system
+        \n  - Upload configuration
+        \n  - Delete old packages
+        \n  - Optimise package storage" 0 0
       tui; exit 0
       ;;
     3)
@@ -804,7 +980,7 @@ tui() {
       output=""
       while IFS= read -r line; do
           output+="$line\n\n"  
-      done < <(list --list)
+      done < <(generation --generation)
       
       dialog --title "List restore points" --msgbox "    Configurations can be found in\n        .nixedit/Configuration \n\n$output" 0 0
       tui; exit 0
@@ -828,7 +1004,7 @@ tui() {
           tui; exit 0
       fi
 
-      echo "$USER_INPUT" > "~/.cache/nixedit/package-age.txt"
+      echo "$USER_INPUT" > ~/.cache/nixedit/package-age.txt
 
       dialog --title "Delete restore points" --infobox "Deleting outdated restore points..." 4 39
       output=$(delete --delete)
@@ -893,11 +1069,30 @@ clear
 }
 
 version() {
-  echo nixedit 0.9.5
+  echo nixedit 1.0.0 Note: Profile support added!
 }
 
-help() {
-  echo "Usage: nixedit [--OPTION]
+usage() {
+  echo "Nixedit command usage
+  --search/-s: open search.
+  --configure/-c: open configuration.
+  --add <package-name> <package-name> ...
+  --remove <package-name> <package-name> ...
+  --install/-i <package-name> <profile-name>.
+  --uninstall/-u <package-name> <profile-name>.
+  --upload: upload configuration.
+  --update: update system.
+  --rebuild/-r <profile-name>.
+  --profile/-p <profile-name>/no option: list profiles.
+  --generation/-g: lists generations.
+  --delete/-d <profile-name>/<number> days old packages.
+  --optimise: optimise storeage.
+  --graph: open store graph.
+  --find <package-name>."
+}
+
+help() { echo "Nixedit Help
+See 'nixedit --usage'.
 
 NixOS build automating utility, for your Configuration & System.
 
@@ -911,17 +1106,18 @@ Info commands:
 Terminal user interface:
   --tui           Open dialog  
 
-Singular options:
+Singular options: (some hame short options '"'-i'"') 
   --search        Search packages
-  --config        Open configuration
+  --configure     Open configuration
   --add           Add package to configuration
   --remove        Remove package from configuration
-  --install       Install package to system
+  --install       Install package to systems
   --uninstall     Uninstall package from system
   --upload        Upload configuration
-  --update        Update the nixpkgs & search, databases
+  --update        Update nixpkgs & search, databases
   --rebuild       Rebuild system
-  --list          List pervious generations
+  --profile       List existing profiles
+  --generation    List existing generations
   --delete        Delete older packages
   --optimise      Optimize Nix storage
   --graph         Browse dependency graph
@@ -965,6 +1161,9 @@ case "$1" in
   -h)
     help
     ;;
+  --usage)
+    usage
+    ;;
   --version)
     version
     ;;
@@ -980,22 +1179,34 @@ case "$1" in
   -s)
     search
     ;;
-  --config)
-    config
+  --configure)
+    configre
     ;;
   -c)
-    config
+    configre
     ;;
   --rebuild)
-    rebuild
+    rebuild "$@"
     ;;
   -r)
-    rebuild
+    rebuild "$@"
     ;;
-  --list)
-    list
+  --generation)
+    generation
+    ;;
+  -g)
+    generation
+    ;;
+  --profile)
+    profile "$@"
+    ;;
+  -p)
+    profile "$@"
     ;;
   --delete)
+    delete "$@"
+    ;;
+  -d)
     delete "$@"
     ;;
   --find)
