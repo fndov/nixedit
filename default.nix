@@ -24,7 +24,7 @@ pkgs.stdenv.mkDerivation {
     mkdir -p $out/bin
 
     # Copy the scripts
-    cp nixedit.sh $out/bin/nixedit
+    cp src/nixedit.sh $out/bin/nixedit
 
     # Ensure they are executable
     chmod +x $out/bin/nixedit
@@ -34,10 +34,20 @@ pkgs.stdenv.mkDerivation {
       "${pkgs.bash}/bin:${pkgs.coreutils}/bin:${pkgs.nix-tree}/bin:${pkgs.jq}/bin:${pkgs.micro}/bin:${pkgs.git}/bin"
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    if ! uname -a | grep "NixOS" > /dev/null; then
+      echo "This package can only be installed on NixOS."
+      exit 1
+    fi
+
+    $out/bin/nixedit --help 
+  '';
+
   meta = with pkgs.lib; {
-    description = "A NixOS Rebuilding CLI Utility";
-    license = licenses.mit;
-    maintainers = [ maintainers.miyu ];
+    homepage = "https://github.com/fndov/nixedit";
+    description = "A NixOS Multipurpose CLI/TUI Utility";
+    license = licenses.gpl3;
+    maintainers = with maintainers; [ miyu ];
   };
 }
-
