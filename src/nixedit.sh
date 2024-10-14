@@ -331,7 +331,7 @@ delete() {
     else
       day_label="days"
     fi
-    task_with_timer "deleting packages older than $days $day_label" "sudo nix-collect-garbage --delete-older-than ${days}d" "error" "failed to delete packages" "deletion complete"
+    task_with_timer "deleting packages older than $days $day_label" "sudo nix-collect-garbage --delete-older-than ${days}d" "Permission denied" "failed to delete packages" "deletion complete"
     return 0
   elif [[ "$2" =~ ^[[:alpha:][:punct:]] ]]; then
     if ls /nix/var/nix/profiles/system-[0-9]* &> /dev/null; then
