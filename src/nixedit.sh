@@ -174,15 +174,24 @@ check() {
   nsearch --check
 }
 
-configre() {
-    if [ "$UID" -eq 0 ]; then
-  echo "There's no need to use sudo in the command."
-  exit 1
+configure() {
+  if [ "$UID" -eq 0 ]; then
+    echo "There's no need to use sudo in the command."
+    exit 1
   fi
+
   if ! sudo true; then
     exit 1
   fi
-  sudo micro /etc/nixos/configuration.nix
+
+  if [ "$#" -eq 1 ]; then
+    micro /etc/nixos/configuration.nix
+  elif [ "$#" -eq 2 ] && [[ "$2" =~ ^[0-9]+$ ]]; then
+    sudo micro +$2 /etc/nixos/configuration.nix
+  else
+    echo "Usage: nixedit --configure/-c <number> open file at line"
+    exit 1
+  fi
 }
 
 rebuild() {
@@ -1176,10 +1185,10 @@ case "$1" in
     search
     ;;
   --configure)
-    configre
+    configure "$@"
     ;;
   -c)
-    configre
+    configure "$@"
     ;;
   --rebuild)
     rebuild "$@"
