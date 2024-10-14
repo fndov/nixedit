@@ -441,7 +441,7 @@ profile() {
       exit 1
     fi
     search > /dev/null
-    configre
+    configure 0
     update_system
     rebuild --rebuild $2
     upload
