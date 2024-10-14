@@ -1,4 +1,3 @@
-SCRIPT_DIR=$(dirname "$0")
 nsearch() {
   CACHE_DIR="${NSEARCH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nixedit}"
   FZF_CMD="${NSEARCH_FZF_CMD:-fzf --multi --preview-window=top,3,wrap}"
@@ -108,6 +107,7 @@ EOF
 }
 
 default_operation() {
+
   if [ "$UID" -eq 0 ]; then
   echo "There's no need to use sudo in the command."
   exit 1
@@ -115,20 +115,15 @@ default_operation() {
   if ! sudo true; then
     exit 1
   fi
-  update_search
+  # Collecition of functions
   search > /dev/null
   configre
   update_system
-  update_search
   rebuild
   upload
   delete
   optimise
-}
 
-update() {
-  update_system
-  update_search
 }
 
 update_system() {
@@ -201,7 +196,8 @@ rebuild() {
   fi
 
   if [ $# -gt 2 ]; then
-    echo "Usage: nixedit --rebuild/-r <profile_name>"
+    echo "Usage: --rebuild <profile_name>"
+    echo "Povided <profile-name> a profile will be built, otherwise a generation will be built."
     exit 1
   fi
 
@@ -222,7 +218,6 @@ rebuild() {
       "sudo nixos-rebuild switch" \
       "error" "rebuild failed" "rebuild generation complete"
   fi
-
 }
 
 upload() {
@@ -284,20 +279,20 @@ update_package_age() {
     mkdir -p "$CACHE_DIR"
 
     if [[ ! -f "$CACHE_FILE" ]]; then
-        echo "1" > "$CACHE_FILE"
-        echo "Created $CACHE_FILE with value 1."
-        return 0
+      echo "1" > "$CACHE_FILE"
+      echo "Created $CACHE_FILE with value 1."
+      return 0
     fi
 
     local CONTENT
     CONTENT=$(<"$CACHE_FILE")
 
     if [[ -z "$CONTENT" ]]; then
-        echo "1" > "$CACHE_FILE"
-        echo "Initialized $CACHE_FILE with value 1."
+      echo "1" > "$CACHE_FILE"
+      echo "Initialized $CACHE_FILE with value 1."
     else
-        echo "$CACHE_FILE already contains data: $CONTENT"
-        return 0
+      echo "$CACHE_FILE already contains data: $CONTENT"
+      return 0
     fi
 }
 
@@ -436,11 +431,9 @@ profile() {
     if ! sudo true; then
       exit 1
     fi
-    update_search
     search > /dev/null
     configre
     update_system
-    update_search
     rebuild --rebuild $2
     upload
     delete
@@ -451,7 +444,7 @@ profile() {
   profiles=$(ls /nix/var/nix/profiles/system-profiles/ 2>/dev/null | grep -v '\-link$')
 
   if [ -z "$profiles" ]; then
-    echo "error: no profiles found."
+    echo "profile: none"
     echo "info: create profiles with 'nixedit --profile/-p <profile-name>'."
   else
     echo "$profiles" | while read -r profile; do
@@ -481,7 +474,7 @@ add() {
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   if [[ "$#" -lt 2 ]]; then
-      echo "Usage: nixedit --add <package-name> <package-name> ..."
+      echo "Usage: --add <package-name> <package-name> ..."
       return 1
   fi
   
@@ -519,7 +512,7 @@ remove() {
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   if [[ "$#" -lt 2 ]]; then
-      echo "Usage: nixedit --remove <package-name> <package-name> ..."
+      echo "Usage: --remove <package-name> <package-name> ..."
       return 1
   fi
   
@@ -551,66 +544,63 @@ remove() {
 }
 
 install() {
-
   if [ "$UID" -eq 0 ]; then
-    echo "There's no need to use sudo in the command."
-    exit 1
+  echo "There's no need to use sudo in the command."
+  exit 1
   fi
   if ! sudo true; then
     exit 1
   fi
-  
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   local new_packages=()
 
   PACKAGE="$2"
 
   if [[ "$#" -eq 2 ]]; then
-      if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "error: file not found: $CONFIG_FILE"
-        return 1
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+      echo "error: file not found: $CONFIG_FILE"
+      return 1
+    fi
+    
+    if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
+      echo "error: '$PACKAGE' is already in system package list."
+      return 0  
+    fi
+    
+    new_packages+=("$PACKAGE")
+  
+    add --add $PACKAGE > /dev/null
+    
+    if [[ ${#new_packages[@]} -gt 0 ]]; then
+      if [[ $profile_name =~ ^[0-9] ]]; then
+        echo "error: profile name cannot start with a number."
+        exit 1
+    fi
+      local task_description="installing ${new_packages[*]}"
+      local command="sudo nixos-rebuild switch"
+      local error_word="error"
+      local error_message="installation failed, '$PACKAGE' may not exist"
+      local success_message="installed ${new_packages[*]}"
+  
+      local start_time=$(date +%s)
+      echo -ne "edit: [ 0 sec ] $task_description\033[0K\r"
+      stopwatch "$task_description" &
+      local stopwatch_pid=$!
+      local output=$($command 2>&1)
+      kill "$stopwatch_pid"
+      wait "$stopwatch_pid" 2>/dev/null
+      local final_time=$(get_elapsed_time "$start_time")
+    
+      if echo "$output" | grep -q "$error_word"; then
+        printf "\rerror: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
+        remove --remove $PACKAGE > /dev/null
+        exit 1
+      else
+        printf "\redit: [ %s ] $success_message.\033[0K\n" "$(format_time "$final_time")"
       fi
-    
-      if grep -q "\b$PACKAGE\b" "$CONFIG_FILE"; then
-        echo "error: '$PACKAGE' is already in system package list."
-        return 0  
-      fi
-    
-      new_packages+=("$PACKAGE")
-    
-      add --add $PACKAGE > /dev/null
-    
-      if [[ ${#new_packages[@]} -gt 0 ]]; then
-          if [[ $profile_name =~ ^[0-9] ]]; then
-          echo "error: profile name cannot start with a number."
-          exit 1
-        fi
-        local task_description="installing ${new_packages[*]}"
-        local command="sudo nixos-rebuild switch"
-        local error_word="error"
-        local error_message="installation failed, '$PACKAGE' may not exist"
-        local success_message="installed ${new_packages[*]}"
-    
-        local start_time=$(date +%s)
-        echo -ne "edit: [ 0 sec ] $task_description\033[0K\r"
-        stopwatch "$task_description" &
-        local stopwatch_pid=$!
-        local output=$($command 2>&1)
-        kill "$stopwatch_pid"
-        wait "$stopwatch_pid" 2>/dev/null
-        local final_time=$(get_elapsed_time "$start_time")
-    
-        if echo "$output" | grep -q "$error_word"; then
-          printf "\rerror: [ %s ] $error_message.\033[0K\n" "$(format_time "$final_time")"
-          remove --remove $PACKAGE > /dev/null
-          exit 1
-        else
-          printf "\redit: [ %s ] $success_message.\033[0K\n" "$(format_time "$final_time")"
-        fi
-      fi
-
+    fi
     return 0
-  elif [[ "$#" -eq 3 ]]; then
+    elif [[ "$#" -eq 3 ]]; then
       if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "error: file not found: $CONFIG_FILE"
         return 1
@@ -656,21 +646,12 @@ install() {
 
     return 0  
   else
-    echo "Usage: nixedit --install/-i <package-name> <profile-name>"
+    echo "Usage: --install <package-name> <profile-name>"
     return 1
   fi
 }
 
 uninstall() {
-
-  if [ "$UID" -eq 0 ]; then
-    echo "There's no need to use sudo in the command."
-    exit 1
-  fi
-  if ! sudo true; then
-    exit 1
-  fi
-  
   local CONFIG_FILE="/etc/nixos/configuration.nix"
   
   local PACKAGE="$2"
@@ -760,7 +741,8 @@ tui() {
 
   case $VAR in
     1)
-     USER_INPUT=$(dialog --title "NixPKG Search" --inputbox "Name the package you're looking for" 8 40 3>&1 1>&2 2>&3 3>&-)
+      # Search packages
+      USER_INPUT=$(dialog --title "NixPKG Search" --inputbox "Name the package you're looking for" 8 40 3>&1 1>&2 2>&3 3>&-)
       
       if [[ -z "$USER_INPUT" ]]; then
           tui; exit 0
@@ -842,37 +824,39 @@ tui() {
       esac
       ;;
     2)
+      # Help
       dialog --title "Nixedit Help." --msgbox "
-        \nUsage: nixedit [--OPTION]
+        \nSee 'nixedit --usage'.
         \n
         \nA NixOS Multipurpose CLI/TUI Utility.
-        \n   
+        \n
         \nSettings:
         \n  --github        Connect your dedicated GitHub repository to store backups
-        \n  
+        \n
         \nInfo commands:
         \n  --help          Show this help message and exit
         \n  --version       Display current nixedit version
-        \n  
+        \n
         \nTerminal user interface:
         \n  --tui           Open dialog  
-        \n  
-        \nSingular options:   
+        \n
+        \nSingular options: (some hame short options '"'-i'"') 
         \n  --search        Search packages
-        \n  --config        Open configuration
+        \n  --configure     Open configuration
         \n  --add           Add package to configuration
         \n  --remove        Remove package from configuration
-        \n  --install       Install package to system
+        \n  --install       Install package to systems
         \n  --uninstall     Uninstall package from system
         \n  --upload        Upload configuration
-        \n  --update        Update the nixpkgs & search, databases
+        \n  --update        Update nixpkgs & search, databases
         \n  --rebuild       Rebuild system
-        \n  --list          List pervious generations
-        \n  --delete        Delete older packages
+        \n  --profile       List existing profiles
+        \n  --generation    List existing generations
+        \n  --delete        Delete packages & profiles
         \n  --optimise      Optimize Nix storage
         \n  --graph         Browse dependency graph
         \n  --find          Find local packages
-        \n                
+        \n        
         \nIf no option is provided, the default operation will:
         \n  - Perform a search
         \n  - Open the configuration file for editing
@@ -884,6 +868,7 @@ tui() {
       tui; exit 0
       ;;
     3)
+      # Connect Github
       repo=$(dialog --title "Connect GitHub" --inputbox "Link repository for configuration storage.\n\nVisit this link and create a dedicated repository.\nhttps://github.com/new\n\nEvery upload will push here" 14 60 3>&1 1>&2 2>&3)
 
       if [ -z "$repo" ]; then
@@ -919,6 +904,7 @@ tui() {
         fi
       ;;
     4)
+      # Configuration
       if 
       echo $password | sudo -S dialog --title "Configuration" --editbox /etc/nixos/configuration.nix 0 0
       then
@@ -931,6 +917,7 @@ tui() {
       tui; exit 0
       ;;
     5)
+      # Backup computer
       dialog --title "Backup computer" --infobox "\n Uploading configuration to GitHub..." 6 42
       output=$(upload)
       if echo "$output" | grep -q "complete"; then
@@ -943,6 +930,7 @@ tui() {
       tui; exit 0
       ;;
     6)
+      # Install software
       USER_INPUT=$(dialog --title "NixPKG Install" --inputbox "Name the package you're trying to install" 8 45 3>&1 1>&2 2>&3 3>&-)
       
       dialog --title "NixPKG Install" --infobox "Your system is currently building.\nInstalling: $USER_INPUT" 4 40
@@ -964,6 +952,7 @@ tui() {
       fi
       ;;
     7)
+      # Uninstall software
       USER_INPUT=$(dialog --title "NixPKG Uninstall" --inputbox "Name the package you're trying to uninstall" 8 47 3>&1 1>&2 2>&3 3>&-)
       dialog --title "NixPKG Uninstall" --infobox "Uninstalling package '$USER_INPUT'. Your system is currently building..." 4 74
 
@@ -981,6 +970,7 @@ tui() {
       fi
       ;;
     8)
+      # List restore points
       output=""
       while IFS= read -r line; do
           output+="$line\n\n"  
@@ -990,6 +980,7 @@ tui() {
       tui; exit 0
       ;;
     9)
+      # Delete restore points
       USER_INPUT=$(dialog --title "Delete restore points" --rangebox "Select the maximum age for restore points (1-30 days)" 9 57 1 30 7 3>&1 1>&2 2>&3 3>&-)
       
       if [[ -z "$USER_INPUT" ]]; then
@@ -1026,6 +1017,7 @@ tui() {
       fi
       ;;
     10)
+      # Optimise storage 
       dialog --title "Optimise storage" --infobox "\n  Currently working on system symlinks.\n\n  This may take 5-10 minutes." 8 50
       output=$(optimise --optimise)
 
@@ -1044,6 +1036,7 @@ tui() {
       fi
       ;;
     11)
+      # Rebuild & Reboot
       dialog --title "Rebuild & Reboot" --infobox "\n  Rebuilding system, computer will automatically reboot when done. \n\n  This may take 1-3 minutes. depending if the kernel is compiling." 8 72
       output=$(optimise --optimise)
 
@@ -1051,7 +1044,6 @@ tui() {
         dialog --title "Rebuild & Reboot" --infobox "\n  Rebuild complete, computer will automatically reboot when done. \n\n  Last phases: Update Upload Delete Optimise | ~1 minute left." 8 72
 
         update_system > /dev/null
-        update_search > /dev/null
         upload > /dev/null
         delete > /dev/null
         optimise > /dev/null
@@ -1090,12 +1082,13 @@ usage() {
   --profile/-p <profile-name>/no option: list profiles.
   --generation/-g: lists generations.
   --delete/-d <profile-name>/<number> days old packages.
-  --optimise: optimise storeage.
+  --optimise: optimise storage.
   --graph: open store graph.
   --find <package-name>."
 }
 
-help() { echo "See 'nixedit --usage'.
+help() { echo "Nixedit Help
+See 'nixedit --usage'.
 
 A NixOS Multipurpose CLI/TUI Utility.
 
