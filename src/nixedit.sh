@@ -218,7 +218,7 @@ rebuild() {
       exit 1
     fi
   
-    task_with_timer "rebuilding profile: $profile_name" \
+    task_with_timer "rebuilding $profile_name profile" \
       "sudo nixos-rebuild switch --profile-name $profile_name" \
       "error" "rebuild $profile_name profile failed" \
       "rebuild $profile_name profile complete"
