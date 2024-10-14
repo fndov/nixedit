@@ -117,7 +117,7 @@ default_operation() {
   fi
   # Collecition of functions
   search > /dev/null
-  configre
+  configre 0
   update_system
   rebuild
   upload
