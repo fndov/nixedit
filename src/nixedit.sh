@@ -1,3 +1,6 @@
+# DISCLAIMER: This is the STABLE branch of the nixedit.
+# All code in this branch has been thoroughly tested and is considered production-ready.
+
 nsearch() {
   CACHE_DIR="${NSEARCH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nixedit}"
   FZF_CMD="${NSEARCH_FZF_CMD:-fzf --multi --preview-window=top,3,wrap}"
