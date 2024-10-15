@@ -45,18 +45,6 @@ If no option is provided, the default operation will:
 ```
 ### Installation Instructions
 You can install `nixedit` using the provided `default.nix` file.
-#### Environment:
-Clone this repository to build and install the package. Copy & Paste.
-```
-mkdir ~/.nixedit; cd ~/.nixedit
-git clone https://github.com/fndov/nixedit.git .
-nix-build            # Build nixedit
-nix-env -i ./result  # Install pacakge
-```
-```
-# Uninstall package using:
-nix-env --uninstall nixedit
-```
 #### Configuration:
 Step 1. Clone this repository.
 ```
