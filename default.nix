@@ -1,5 +1,5 @@
 {
-  lib,
+  lib
 , stdenv
 , fetchFromGitHub
 , bash
