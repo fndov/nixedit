@@ -188,7 +188,7 @@ configure() {
   fi
 
   if [ "$#" -eq 1 ]; then
-    micro /etc/nixos/configuration.nix
+    sudo micro /etc/nixos/configuration.nix
   elif [ "$#" -eq 2 ] && [[ "$2" =~ ^[0-9]+$ ]]; then
     sudo micro +$2 /etc/nixos/configuration.nix
   else
