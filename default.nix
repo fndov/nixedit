@@ -1,16 +1,16 @@
 {
-  lib,
-  stdenv,
-  fetchFromGitHub,
-  bash,
-  fzf,
-  jq,
-  micro,
-  git,
-  nix-tree,
-  coreutils,
-  makeWrapper,
-  dialog,
+  lib
+, stdenv
+, fetchFromGitHub
+, bash
+, fzf
+, jq
+, micro
+, git
+, nix-tree
+, coreutils
+, makeWrapper
+, dialog
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "fndov";
     repo = "nixedit";
-    rev = "d5fd24439917b0359529aee7d29da85f20608877";
-    hash = "sha256-Xp7hMDjPuQyBZ535RHq5fI2r9iIeD8uC5LhHB+CB5sA=";
+    rev = "491b3f32485c5ec3de9bc8d9f1bfeb5590ecece5";
+    hash = "sha256-hU9LqT++LgfgtujHj9u9ZvYp5QsdJYiKRXw8ahK11AU=";
   };
 
   nativeBuildInputs = [
