@@ -45,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     # Move the script
     mv src/nixedit.sh $out/bin/nixedit
 
-    # Ensure that it is executable
+    # Ensure it is executable
     chmod +x $out/bin/nixedit
 
     # Wrap nixedit to include the necessary dependencies in PATH
