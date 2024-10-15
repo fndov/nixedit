@@ -852,7 +852,7 @@ tui() {
         \nTerminal user interface:
         \n  --tui           Open dialog  
         \n
-        \nSingular options: (some hame short options '"'-i'"') 
+        \nSingular options: (some have short options '"'-i'"') 
         \n  --search        Search packages
         \n  --configure     Open configuration
         \n  --add           Add package to configuration
@@ -1114,7 +1114,7 @@ Info commands:
 Terminal user interface:
   --tui           Open dialog  
 
-Singular options: (some hame short options '"'-i'"') 
+Singular options: (some have short options '"'-i'"') 
   --search        Search packages
   --configure     Open configuration
   --add           Add package to configuration
