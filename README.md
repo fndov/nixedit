@@ -17,7 +17,7 @@ Info commands:
 Terminal user interface:
   --tui           Open dialog  
 
-Singular options: (some hame short options '-i') 
+Singular options: (some have short options '-i') 
   --search        Search packages
   --configure     Open configuration
   --add           Add package to configuration
