@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "fndov";
     repo = "nixedit";
-    rev = "stable";
-    hash = "sha256-XLzaQm8tpAZxvwjRW6eIJkmtv7LNHDAFUK82hj1VUYY=";
+    rev = "d5fd24439917b0359529aee7d29da85f20608877";
+    hash = "sha256-Xp7hMDjPuQyBZ535RHq5fI2r9iIeD8uC5LhHB+CB5sA=";
   };
 
   nativeBuildInputs = [
@@ -42,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     mkdir -p $out/bin
 
-    # Move the script
-    mv src/nixedit.sh $out/bin/nixedit
+    # Copy the scripts
+    cp src/nixedit.sh $out/bin/nixedit
 
-    # Ensure it is executable
+    # Ensure they are executable
     chmod +x $out/bin/nixedit
 
     # Wrap nixedit to include the necessary dependencies in PATH
