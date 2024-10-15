@@ -13,39 +13,44 @@
   dialog,
 }:
 
-stdenv.mkDerivation {
+stdenv.mkDerivation (finalAttrs: {
   pname = "nixedit";
   version = "1.0.0";
 
-  src = ./src;
+  src = fetchFromGitHub {
+    owner = "fndov";
+    repo = "nixedit";
+    rev = "stable";
+    hash = "sha256-P5Up8YbXL7d4/6oG+WFw1jS6EbvAK0SWz5Z8iH+ho+Q=";
+  };
 
   nativeBuildInputs = [
     makeWrapper
   ];
 
   buildInputs = [
-      bash
-      fzf
-      jq
-      micro
-      git
-      nix-tree
-      coreutils
-      dialog
-    ];
+    bash
+    fzf
+    jq
+    micro
+    git
+    nix-tree
+    coreutils
+    dialog
+  ];
 
   installPhase = ''
     mkdir -p $out/bin
 
-    # Copy the scripts
-    cp src/nixedit.sh $out/bin/nixedit
+    # Move the script
+    mv src/nixedit.sh $out/bin/nixedit
 
-    # Ensure they are executable
+    # Ensure that it is executable
     chmod +x $out/bin/nixedit
 
     # Wrap nixedit to include the necessary dependencies in PATH
     wrapProgram $out/bin/nixedit --prefix PATH : \
-      "${bash}/bin:${coreutils}/bin:${nix-tree}/bin:${jq}/bin:${micro}/bin:${git}/bin:${fzf}/bin:${dialog}/bin"
+      "${lib.makeBinPath finalAttrs.buildInputs}"
   '';
 
   doInstallCheck = true;
@@ -58,11 +63,11 @@ stdenv.mkDerivation {
     $out/bin/nixedit --help > /dev/null
   '';
 
-  meta = {
+  meta = with lib; {
     homepage = "https://github.com/fndov/nixedit";
     description = "A NixOS Multipurpose CLI/TUI Utility";
-    license = lib.licenses.gpl3;
+    license = licenses.gpl3;
     mainProgram = "nixedit";
-    maintainers = with lib.maintainers; [ miyu ];
+    maintainers = [ maintainers.miyu ];
   };
-}
+})
