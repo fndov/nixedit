@@ -1099,8 +1099,7 @@ usage() {
   --find <package-name>."
 }
 
-help() { echo "Nixedit Help
-See 'nixedit --usage'.
+help() { echo "See 'nixedit --usage'.
 
 A NixOS Multipurpose CLI/TUI Utility.
 
