@@ -1079,7 +1079,7 @@ clear
 }
 
 version() {
-  echo nixedit 1.0.0 Note: Profile support added!
+  echo nixedit 1.0.1 Note: Profile support added!
 }
 
 usage() {
