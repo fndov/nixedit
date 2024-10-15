@@ -20,7 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "fndov";
     repo = "nixedit";
-    rev = "e584bb5680affb645ef8736244a53d8eb4d3284b";
+    rev = "ead9a29bda762a72284f581425ce920c96138792";
     hash = "sha256-JpppNVxiqrj9NLBWDvd6MtVfWLF9c0glMgLjTUUkdTk=";
   };
 
