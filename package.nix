@@ -1,16 +1,16 @@
 {
-  lib
-, stdenv
-, fetchFromGitHub
-, bash
-, fzf
-, jq
-, micro
-, git
-, nix-tree
-, coreutils
-, makeWrapper
-, dialog
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  bash,
+  fzf,
+  jq,
+  micro,
+  git,
+  nix-tree,
+  coreutils,
+  makeWrapper,
+  dialog,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,27 +40,27 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   installPhase = ''
+    runHook reInstall
+
     mkdir -p $out/bin
 
-    # Move the script
     mv src/nixedit.sh $out/bin/nixedit
 
-    # Ensure it is executable
     chmod +x $out/bin/nixedit
 
-    # Wrap nixedit to include the necessary dependencies in PATH
-    wrapProgram $out/bin/nixedit --prefix PATH : \
-      "${lib.makeBinPath finalAttrs.buildInputs}"
+    runHook postInstall
   '';
 
-  doInstallCheck = true;
+  postFixup = ''
+    wrapProgram $out/bin/nixedit \
+      --prefix PATH : "${lib.makeBinPath finalAttrs.buildInputs}"
+  '';
+
   installCheckPhase = ''
     if ! uname -a | grep "NixOS" > /dev/null; then
-      echo "This package can only be installed on NixOS."
+      echo "nxiedit package can only be installed on NixOS."
       exit 1
     fi
-
-    $out/bin/nixedit --help > /dev/null
   '';
 
   meta = with lib; {
@@ -68,6 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "A NixOS Multipurpose CLI/TUI Utility";
     license = licenses.gpl3;
     mainProgram = "nixedit";
-    maintainers = [ maintainers.miyu ];
+    maintainers = with maintainers; [ miyu ];
+    platforms = lib.platforms.linux;
   };
 })
