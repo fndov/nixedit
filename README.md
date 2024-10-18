@@ -44,7 +44,7 @@ If no option is provided, the default operation will:
   - Optimise package storage
 ```
 ### Installation Instructions
-You can install `nixedit` using the provided `default.nix` file.
+You can install `nixedit` using the provided `package.nix` file.
 #### Configuration:
 Step 1. Clone this repository.
 ```
@@ -54,7 +54,7 @@ git clone https://github.com/fndov/nixedit.git .
 Step 2. Include in your configuration.nix
 ```
 nixpkgs.config.packageOverrides = pkgs: {
-  nixedit = pkgs.callPackage /home/USERNAME/.nixedit/default.nix { };
+  nixedit = pkgs.callPackage /home/USERNAME/.nixedit/package.nix { };
 };
 
 environment.systemPackages = with pkgs; [
