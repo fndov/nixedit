@@ -49,7 +49,7 @@ nsearch() {
 
   update() {
     mkdir -p "$CACHE_DIR"
-    nix search nixpkgs --extra-experimentail-features nix-command --extra-experimentail-features flakes --json "" 2>/dev/null 1>"$CACHE_DIR/db.json" &
+    nix search nixpkgs --extra-experimental-features nix-command --extra-experimental-features flakes --json "" 2>/dev/null 1>"$CACHE_DIR/db.json" &
     loading "edit: updating the local Database."
     echo "edit: database updated."
   }
