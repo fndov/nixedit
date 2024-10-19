@@ -1,8 +1,3 @@
-# DISCLAIMER: This is the MAIN branch of nixedit.
-# Code in this branch may contain ongoing developments and is not guaranteed to be stable.
-# It is intended for active development and may include untested features.
-# Please use caution when deploying from this branch.
-
 nsearch() {
   CACHE_DIR="${NSEARCH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nixedit}"
   FZF_CMD="${NSEARCH_FZF_CMD:-fzf --multi --preview-window=top,3,wrap}"
@@ -54,7 +49,7 @@ nsearch() {
 
   update() {
     mkdir -p "$CACHE_DIR"
-    nix search nixpkgs --json "" 2>/dev/null 1>"$CACHE_DIR/db.json" &
+    nix search nixpkgs --extra-experimentail-features nix-command --extra-experimentail-features flakes --json "" 2>/dev/null 1>"$CACHE_DIR/db.json" &
     loading "edit: updating the local Database."
     echo "edit: database updated."
   }
@@ -190,7 +185,7 @@ configure() {
   fi
 
   if [ "$#" -eq 1 ]; then
-    micro /etc/nixos/configuration.nix
+    sudo micro /etc/nixos/configuration.nix
   elif [ "$#" -eq 2 ] && [[ "$2" =~ ^[0-9]+$ ]]; then
     sudo micro +$2 /etc/nixos/configuration.nix
   else
@@ -854,7 +849,7 @@ tui() {
         \nTerminal user interface:
         \n  --tui           Open dialog  
         \n
-        \nSingular options: (some hame short options '"'-i'"') 
+        \nSingular options: (some have short options '"'-i'"') 
         \n  --search        Search packages
         \n  --configure     Open configuration
         \n  --add           Add package to configuration
@@ -1079,7 +1074,7 @@ clear
 }
 
 version() {
-  echo nixedit 1.0.1 Note: Profile support added!
+  echo nixedit 1.0.0 Note: Profile support added!
 }
 
 usage() {
@@ -1101,8 +1096,7 @@ usage() {
   --find <package-name>."
 }
 
-help() { echo "Nixedit Help
-See 'nixedit --usage'.
+help() { echo "See 'nixedit --usage'.
 
 A NixOS Multipurpose CLI/TUI Utility.
 
@@ -1116,7 +1110,7 @@ Info commands:
 Terminal user interface:
   --tui           Open dialog  
 
-Singular options: (some hame short options '"'-i'"') 
+Singular options: (some have short options '"'-i'"') 
   --search        Search packages
   --configure     Open configuration
   --add           Add package to configuration
