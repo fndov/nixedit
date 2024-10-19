@@ -17,7 +17,7 @@ Info commands:
 Terminal user interface:
   --tui           Open dialog  
 
-Singular options: (some hame short options '-i') 
+Singular options: (some have short options '-i') 
   --search        Search packages
   --configure     Open configuration
   --add           Add package to configuration
@@ -44,29 +44,17 @@ If no option is provided, the default operation will:
   - Optimise package storage
 ```
 ### Installation Instructions
-You can install `nixedit` using the provided `default.nix` file.
-#### Environment:
-Clone this repository to build and install the package. Copy & Paste.
-```
-mkdir ~/.nixedit; cd ~/.nixedit
-git clone https://github.com/fndov/nixedit.git .
-nix-build            # Build nixedit
-nix-env -i ./result  # Install pacakge
-```
-```
-# Uninstall package using:
-nix-env --uninstall nixedit
-```
+You can install `nixedit` using the provided `package.nix` file.
 #### Configuration:
 Step 1. Clone this repository.
 ```
 mkdir ~/.nixedit; cd ~/.nixedit
-git clone https://github.com/fndov/nixedit.git .
+git clone --branch main https://github.com/fndov/nixedit.git .
 ```
 Step 2. Include in your configuration.nix
 ```
 nixpkgs.config.packageOverrides = pkgs: {
-  nixedit = pkgs.callPackage /home/USERNAME/.nixedit/default.nix { };
+  nixedit = pkgs.callPackage /home/USERNAME/.nixedit/package.nix { };
 };
 
 environment.systemPackages = with pkgs; [
