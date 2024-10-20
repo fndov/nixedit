@@ -1,13 +1,9 @@
-# DISCLAIMER: This is the STABLE branch of the nixedit.
-# All code in this branch has been thoroughly tested and is considered production-ready.
-
 nsearch() {
   CACHE_DIR="${NSEARCH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nixedit}"
   FZF_CMD="${NSEARCH_FZF_CMD:-fzf --multi --preview-window=top,3,wrap}"
 
   program_check() {
     if ! command -v "$1" >/dev/null; then
-      echo "error: $1 is not installed."
       exit 1
     fi
   }
@@ -19,42 +15,31 @@ nsearch() {
   }
 
   checks() {
-    all_checks
+    all_checks 
     if [ ! -d "$CACHE_DIR" ]; then
-      echo "error: cache directory does not exist."
       mkdir -p "$CACHE_DIR"
-      echo "edit: cache directory created."
     fi
     if [ ! -f "$CACHE_DIR/db.json" ]; then
-      echo "error: database not available."
       if ! update; then
-        echo "error: failed to update database, check network."
         exit 1
       fi
-    fi
-
-    if [ $# -eq 1 ]; then
-      echo "edit: all checks passed."
     fi
   }
 
   loading() {
     pid=$!
     i=1
-    sp="\|/-"
+    sp=""
     printf "%s" "$1"
     while ps -p $pid >/dev/null; do
-      printf "\b%c" "${sp:i++%4:1}"
       sleep 0.1
     done
-    echo ""
   }
 
   update() {
     mkdir -p "$CACHE_DIR"
-    nix search nixpkgs --json "" 2>/dev/null 1>"$CACHE_DIR/db.json" &
-    loading "edit: updating the local Database."
-    echo "edit: database updated."
+    nix search nixpkgs --extra-experimental-features nix-command --extra-experimental-features flakes --json "" 2>/dev/null 1>"$CACHE_DIR/db.json" &
+    loading "edit: updating the local database."
   }
 
   preview_data() {
@@ -98,7 +83,6 @@ EOF
       exit 0
       ;;
     *)
-      echo "Unknown option: $1"
       help
       exit 1
       ;;
@@ -106,7 +90,7 @@ EOF
   done
 
   checks
-  isearch
+  isearch > /dev/null
 }
 
 default_operation() {
@@ -119,7 +103,7 @@ default_operation() {
     exit 1
   fi
   # Collecition of functions
-  search > /dev/null
+  search
   configure 0
   update_system
   rebuild
@@ -130,11 +114,11 @@ default_operation() {
 }
 
 update_system() {
-  task_with_timer "updating pacakges database" "nix-channel --update > /dev/null" "error" "failed to update package database" "update database complete"
+  task_with_timer "updating channel" "nix-channel --update > /dev/null" "error" "failed to update channel" "update channel complete"
 }
 
 update_search() {
-  nsearch --check > /dev/null 2>&1 &
+  nsearch --check &
   pid=$!
   start=$(date +%s)
 
@@ -170,7 +154,7 @@ update_search() {
 
 search() {
   update_search 
-  nsearch "$@"
+  nsearch 
 }
 
 check() {
@@ -351,7 +335,6 @@ delete() {
 
 debug() {
   rm -rf ~/.cache/nixedit > /dev/null 2>&1
-  rm -rf ~/.nixedit/Home/ ~/.nixedit/Configuration/ ~/.nixedit/Flake/ > /dev/null 2>&1
   echo "debug: nixedit reset complete."
 }
 
@@ -840,7 +823,7 @@ tui() {
       dialog --title "Nixedit Help." --msgbox "
         \nSee 'nixedit --usage'.
         \n
-        \nA NixOS Multipurpose CLI/TUI Utility.
+        \nNixOS Multipurpose CLI/TUI Utility.
         \n
         \nSettings:
         \n  --github        Connect your dedicated GitHub repository to store backups
@@ -872,7 +855,7 @@ tui() {
         \nIf no option is provided, the default operation will:
         \n  - Perform a search
         \n  - Open the configuration file for editing
-        \n  - Update system packages
+        \n  - Update channel
         \n  - Rebuild the system
         \n  - Upload configuration
         \n  - Delete old packages
@@ -1077,7 +1060,7 @@ clear
 }
 
 version() {
-  echo nixedit 1.0.0 Note: Profile support added!
+  echo "version 1.0.1."
 }
 
 usage() {
@@ -1101,7 +1084,7 @@ usage() {
 
 help() { echo "See 'nixedit --usage'.
 
-A NixOS Multipurpose CLI/TUI Utility.
+NixOS Multipurpose CLI/TUI Utility.
 
 Settings:
   --github        Connect your dedicated GitHub repository to store backups
@@ -1133,14 +1116,14 @@ Singular options: (some have short options '"'-i'"')
 If no option is provided, the default operation will:
   - Perform a search
   - Open the configuration file for editing
-  - Update system packages
+  - Update channel
   - Rebuild the system
   - Upload configuration
   - Delete old packages
   - Optimise package storage"
-
+  
 #  Development options:
-#  --debug         Reset all nixedit data
+#  --debug         Reset nixedit cache
 #  --check         Check search functionality
 }
 
