@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "fndov";
     repo = "nixedit";
-    rev = "72b7ca8933efbf0d4295b7c7704eac2fb66d9b69";
-    hash = "sha256-MUFzvb+pSNWQ1bKd15zaJt+0Z2aUg/7zeOdUH4GJRmk=";
+    rev = "00cfa46fdaa7075c1253de5b9e05e7703150b53f";
+    hash = "sha256-jdQ3GK+7Ew3mifmChc95sYv0zOID3SkFIjxPOtzCu7Q=";
   };
 
   nativeBuildInputs = [
