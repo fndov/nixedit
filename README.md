@@ -1,12 +1,12 @@
 ## Nixedit
-A NixOS Multipurpose CLI/TUI Utility.
+NixOS Multipurpose CLI/TUI Utility.
 ### Features:
 - Full Terminal User Interface & Command line usage.
 - Search Configure Build Backup Update Delete Optimise in one step.
 - Complete Profile management, Integrated Creation & Removal. 
 - Integrates with Github to upload backups of your configuration.
 ### Commands:
-```Nixedit Help
+```
 Settings:
   --github        Connect your dedicated GitHub repository to store backups
 
@@ -17,12 +17,12 @@ Info commands:
 Terminal user interface:
   --tui           Open dialog  
 
-Singular options: (some have short options '-i') 
+Singular options: (some have short options '"'-i'"') 
   --search        Search packages
   --configure     Open configuration
   --add           Add package to configuration
   --remove        Remove package from configuration
-  --install       Install package to system
+  --install       Install package to systems
   --uninstall     Uninstall package from system
   --upload        Upload configuration
   --update        Update nixpkgs & search, databases
@@ -37,7 +37,7 @@ Singular options: (some have short options '-i')
 If no option is provided, the default operation will:
   - Perform a search
   - Open the configuration file for editing
-  - Update system packages
+  - Update channel
   - Rebuild the system
   - Upload configuration
   - Delete old packages
