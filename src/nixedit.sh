@@ -1143,7 +1143,7 @@ case "$1" in
     upload
     ;;
   --update)
-    update
+    update_system
     ;;
   --help)
     help
