@@ -1060,7 +1060,7 @@ clear
 }
 
 version() {
-  echo "version 1.0.1."
+  echo "version 1.0.2."
 }
 
 usage() {
