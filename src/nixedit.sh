@@ -114,6 +114,13 @@ default_operation() {
 }
 
 update_system() {
+  if [ "$UID" -eq 0 ]; then
+  echo "There's no need to use sudo in the command."
+  exit 1
+  fi
+  if ! sudo true; then
+    exit 1
+  fi
   task_with_timer "updating channel" "sudo nix-channel --update > /dev/null" "error" "failed to update channel" "update channel complete"
 }
 
