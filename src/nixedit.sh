@@ -114,7 +114,7 @@ default_operation() {
 }
 
 update_system() {
-  task_with_timer "updating channel" "nix-channel --update > /dev/null" "error" "failed to update channel" "update channel complete"
+  task_with_timer "updating channel" "sudo nix-channel --update > /dev/null" "error" "failed to update channel" "update channel complete"
 }
 
 update_search() {
