@@ -791,7 +791,7 @@ tui() {
       
       tui_search=$(
         {
-          nix search nixpkgs 2>/dev/null | 
+          nix search nixpkgs  --extra-experimental-features nix-command --extra-experimental-features flakes 2>/dev/null | 
           grep "$USER_INPUT" | 
           awk -F "legacyPackages.x86_64-linux." '{print $2}' | 
           awk '{print $1}' | 
@@ -867,8 +867,46 @@ tui() {
     2)
       # Help
       dialog --title "Nixedit Help." --msgbox "
-        \n DEBUG
-  " 0 0
+      \nSee 'nixedit usage'
+      \n
+      \nNixOS Multipurpose CLI/TUI Utility.
+      \n
+      \nSettings:
+      \n  sync        Connect your dedicated GitHub repository to store backups
+      \n
+      \nInfo commands:
+      \n  help          Show this help message and exit
+      \n  version       Display current nixedit version
+      \n
+      \nTerminal user interface:
+      \n  tui           Open dialog  
+      \n
+      \nSingular options: (some have short options '"'-i'"') 
+      \n  search        Search packages
+      \n  configure     Open configuration
+      \n  add           Add package to configuration
+      \n  remove        Remove package from configuration
+      \n  install       Install package to systems
+      \n  uninstall     Uninstall package from system
+      \n  upload        Upload configuration
+      \n  update        Update system and database
+      \n  rebuild       Rebuild system and switch
+      \n  build         Build system and not switch
+      \n  profile       List existing profiles
+      \n  generation    List existing generations
+      \n  collect       Collect packages & profiles
+      \n  optimise      Optimize Nix storage
+      \n  graph         Browse dependency graph
+      \n  find          Find local packages
+      \n        
+      \nIf no option is provided, the default operation will:
+      \n  - Perform a search
+      \n  - Open the configuration file for editing
+      \n  - Update channel
+      \n  - Rebuild the system
+      \n  - Upload configuration
+      \n  - Collect outdated packages
+      \n  - Optimise package storage" 0 0
       tui; exit 0
       ;;
     3)
