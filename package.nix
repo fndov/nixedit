@@ -1,4 +1,4 @@
-{
+ {
   lib,
   stdenv,
   fetchFromGitHub,
@@ -15,13 +15,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nixedit";
-  version = "1.0.2";
+  version = "1.1.0";
 
   src = fetchFromGitHub {
     owner = "fndov";
     repo = "nixedit";
-    rev = "efc5274a5c77103f16cc45ff85af96e9356a6b65";
-    hash = "sha256-DBfRWVqZqsseBpyNyJoibmKp1eYlLiKdqgk5ZK7kmEY=";
+    rev = "51c1fb7c1db416dec89d0388b5600920a4561b7c";
+    hash = "sha256-8E39vjOoeuD2uJimYfABJqu8j7lL0VhywcETpT4KwZs=";
   };
 
   nativeBuildInputs = [
@@ -65,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = with lib; {
     homepage = "https://github.com/fndov/nixedit";
-    description = "A NixOS Multipurpose CLI/TUI Utility";
+    description = "NixOS Multipurpose CLI/TUI Utility";
     license = licenses.gpl3;
     mainProgram = "nixedit";
     maintainers = with maintainers; [ miyu ];
