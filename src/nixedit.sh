@@ -1107,7 +1107,7 @@ clear
 }
 
 version() {
-echo "Nixedit Version 1.0.3. GNU Public License v3.0
+echo "Nixedit Version 1.1.0. GNU Public License v3.0
   
 Visit: github.com/fndov/nixedit
 Contact: miyu@allthingslinux.com
