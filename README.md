@@ -8,31 +8,32 @@ NixOS Multipurpose CLI/TUI Utility.
 ### Commands:
 ```
 Settings:
-  --github        Connect your dedicated GitHub repository to store backups
+  sync        Connect your dedicated GitHub repository to store backups
 
 Info commands:
-  --help          Show this help message and exit
-  --version       Display current nixedit version
+  help          Show this help message and exit
+  version       Display current nixedit version
 
 Terminal user interface:
-  --tui           Open dialog  
+  tui           Open dialog  
 
 Singular options: (some have short options '-i') 
-  --search        Search packages
-  --configure     Open configuration
-  --add           Add package to configuration
-  --remove        Remove package from configuration
-  --install       Install package to systems
-  --uninstall     Uninstall package from system
-  --upload        Upload configuration
-  --update        Update nixpkgs & search, databases
-  --rebuild       Rebuild system
-  --profile       List existing profiles
-  --generation    List existing generations
-  --delete        Delete packages & profiles
-  --optimise      Optimize Nix storage
-  --graph         Browse dependency graph
-  --find          Find local packages
+  search        Search packages
+  configure     Open configuration
+  add           Add package to configuration
+  remove        Remove package from configuration
+  install       Install package to systems
+  uninstall     Uninstall package from system
+  upload        Upload configuration
+  update        Update system and database
+  rebuild       Rebuild system and switch
+  build         Build system and not switch
+  profile       List existing profiles
+  generation    List existing generations
+  collect       Collect packages & profiles
+  optimise      Optimize Nix storage
+  graph         Browse dependency graph
+  find          Find local packages
         
 If no option is provided, the default operation will:
   - Perform a search
@@ -40,7 +41,7 @@ If no option is provided, the default operation will:
   - Update channel
   - Rebuild the system
   - Upload configuration
-  - Delete old packages
+  - Collect outdated packages
   - Optimise package storage
 ```
 ### Installation Instructions
