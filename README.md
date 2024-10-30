@@ -71,4 +71,4 @@ Github: [Managing your personal access tokens](https://docs.github.com/en/authen
 
 Third Party Code: [Package search](https://github.com/niksingh710/nsearch?tab=readme-ov-file)
 
-<sup>*experiments unsupported.*<sup>
+<sup>experiments unsupported.<sup>
