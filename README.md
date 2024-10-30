@@ -67,7 +67,7 @@ Step 3. Install the package.
 sudo nixos-rebuild switch
 ```
 ---
-Github: [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). Use ``--debug`` for any problems, or submit an issue.
+Github: [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). Use 'debug' for any problems, or submit an issue.
 
 Third Party Code: [Package search](https://github.com/niksingh710/nsearch?tab=readme-ov-file)
 
