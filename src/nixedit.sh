@@ -107,7 +107,7 @@ default_operation() {
   update_system
   rebuild
   upload
-  delete
+  collect
   optimise
 
 }
