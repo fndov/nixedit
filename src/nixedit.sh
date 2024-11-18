@@ -267,14 +267,14 @@ upload() {
   if [ $? -eq 0 ]; then
       true
   else
-      echo "edit: [ 0 sec ] upload failed, use --github to get started."
+      echo "edit: [ 0 sec ] upload failed, use 'sync' to get started."
     return
   fi
 
   git add . > /dev/null 2>&1
 
   git commit -m "Automatic backup" > /dev/null 2>&1
-  task_with_timer "uploading configuration" "git push -u origin main --force" "upload failed, use --github to get started" "upload complete"
+  task_with_timer "uploading configuration" "git push -u origin main --force" "upload failed, use 'sync' to get started" "upload complete"
   fi
 }
 
