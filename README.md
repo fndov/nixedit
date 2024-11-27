@@ -5,7 +5,7 @@ NixOS Multipurpose CLI/TUI Utility.
 - Search Configure Build Backup Update Delete Optimise in one step.
 - Complete Profile management, Integrated Creation & Removal. 
 - Integrates with Github to upload backups of your configuration.
-### TODO List for 1.2.0 release
+### TODO List for 1.2.0 release.
 - [ ] Implement Python3.
 - [ ] Implement functionality for seconds, minutes, and hours (Sec, Min & Hr).
 - [ ] Consider other formats for the messages.
